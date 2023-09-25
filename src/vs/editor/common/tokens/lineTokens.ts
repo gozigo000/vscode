@@ -3,6 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/**
+ * [개요]
+ * export interface `IViewLineTokens`
+ * export class `LineTokens` implements IViewLineTokens
+ *        class `SliceLineTokens` implements IViewLineTokens
+ *--------------------------------------------------------------------------------------------*/
+
 import { ILanguageIdCodec } from 'vs/editor/common/languages';
 import { FontStyle, ColorId, StandardTokenType, MetadataConsts, TokenMetadata, ITokenPresentation } from 'vs/editor/common/encodedTokenAttributes';
 

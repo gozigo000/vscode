@@ -23,5 +23,6 @@ export function applyFontInfo(domNode: FastDomNode<HTMLElement> | HTMLElement, f
 		domNode.style.fontVariationSettings = fontInfo.fontVariationSettings;
 		domNode.style.lineHeight = fontInfo.lineHeight + 'px';
 		domNode.style.letterSpacing = fontInfo.letterSpacing + 'px';
+		domNode.style.verticalAlign = 'top'; //
 	}
 }

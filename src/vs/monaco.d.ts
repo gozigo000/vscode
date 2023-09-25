@@ -533,394 +533,466 @@ declare namespace monaco {
 		readonly scrollHeightChanged: boolean;
 	}
 	/**
-	 * A position in the editor. This interface is suitable for serialization.
+	 * 에디터에서 위치(position)
+	 *
+	 * This interface is suitable for serialization.
 	 */
 	export interface IPosition {
 		/**
-		 * line number (starts at 1)
+		 * line 번호 (`1`부터 시작)
 		 */
 		readonly lineNumber: number;
 		/**
-		 * column (the first character in a line is between column 1 and column 2)
-		 */
+		 * column 번호 (각 line에서 첫 글자는 column `1`과 column `2` 사이에 있음)
+		*/
 		readonly column: number;
 	}
 
 	/**
-	 * A position in the editor.
-	 */
+	 * 에디터에서 위치(position)
+	*/
 	export class Position {
 		/**
-		 * line number (starts at 1)
-		 */
+		 * line 번호 (`1`부터 시작)
+		*/
 		readonly lineNumber: number;
 		/**
-		 * column (the first character in a line is between column 1 and column 2)
+		 * column 번호 (각 line에서 첫 글자는 column `1`과 column `2` 사이에 있음)
 		 */
 		readonly column: number;
 		constructor(lineNumber: number, column: number);
 		/**
-		 * Create a new position from this position.
+		 * 새로운 Position 만들기
 		 *
-		 * @param newLineNumber new line number
-		 * @param newColumn new column
+		 * @param newLineNumber 새로운 line 번호
+		 * @param newColumn 새로운 column 번호
 		 */
 		with(newLineNumber?: number, newColumn?: number): Position;
 		/**
-		 * Derive a new position from this position.
+		 * delta만큼 위치 이동하기
 		 *
-		 * @param deltaLineNumber line number delta
+		 * @param deltaLineNumber line delta
 		 * @param deltaColumn column delta
 		 */
 		delta(deltaLineNumber?: number, deltaColumn?: number): Position;
 		/**
-		 * Test if this position equals other position
+		 * position `this`와 position `other`가 동일한지 체크
 		 */
 		equals(other: IPosition): boolean;
 		/**
-		 * Test if position `a` equals position `b`
+		 * position `a`와 position `b`가 동일한지 체크
 		 */
 		static equals(a: IPosition | null, b: IPosition | null): boolean;
 		/**
-		 * Test if this position is before other position.
-		 * If the two positions are equal, the result will be false.
+		 * position `this`가 position `other`보다 앞에 있는지 체크
+		 *
+		 * 만약에 두 위치가 동일하면 `false` 반환함
 		 */
 		isBefore(other: IPosition): boolean;
 		/**
-		 * Test if position `a` is before position `b`.
-		 * If the two positions are equal, the result will be false.
+		 * position `a`가 position `b`보다 앞에 있는지 체크
+		 *
+		 * 만약에 두 위치가 동일하면 `false` 반환함
 		 */
 		static isBefore(a: IPosition, b: IPosition): boolean;
 		/**
-		 * Test if this position is before other position.
-		 * If the two positions are equal, the result will be true.
+		 * position `this`가 position `other`보다 앞에 있는지 체크
+		 *
+		 * 만약에 두 위치가 동일하면 `true` 반환함
 		 */
 		isBeforeOrEqual(other: IPosition): boolean;
 		/**
-		 * Test if position `a` is before position `b`.
-		 * If the two positions are equal, the result will be true.
+		 * position `a`가 position `b`보다 앞에 있는지 체크
+		 *
+		 * 만약에 두 위치가 동일하면 `true` 반환함
 		 */
 		static isBeforeOrEqual(a: IPosition, b: IPosition): boolean;
 		/**
-		 * A function that compares positions, useful for sorting
+		 * position 비교하는 함수, 정렬(sort)할 때 유용함.
 		 */
 		static compare(a: IPosition, b: IPosition): number;
 		/**
-		 * Clone this position.
+		 * `this` 위치 복제하기
 		 */
 		clone(): Position;
 		/**
-		 * Convert to a human-readable representation.
+		 * `"(line번호,column번호)"` 형태의 문자열로 반환 (human-readable)
 		 */
 		toString(): string;
 		/**
-		 * Create a `Position` from an `IPosition`.
+		 * `IPosition`으로 `Position` 객체 만들기.
 		 */
 		static lift(pos: IPosition): Position;
 		/**
-		 * Test if `obj` is an `IPosition`.
+		 * `obj`가 `IPosition` 인터페이스인지 체크.
 		 */
 		static isIPosition(obj: any): obj is IPosition;
 	}
 
 	/**
-	 * A range in the editor. This interface is suitable for serialization.
+	 * 에디터에서 범위(range)
+	 *
+	 * This interface is suitable for serialization.
 	 */
 	export interface IRange {
 		/**
-		 * Line number on which the range starts (starts at 1).
+		 * range가 시작하는 line 번호 (`1`부터 시작)
 		 */
 		readonly startLineNumber: number;
 		/**
-		 * Column on which the range starts in line `startLineNumber` (starts at 1).
+		 * range가 시작하는 line `startLineNumber`에서 Column 번호 (`1`부터 시작)
 		 */
 		readonly startColumn: number;
 		/**
-		 * Line number on which the range ends.
+		 * range가 끝나는 line 번호
 		 */
 		readonly endLineNumber: number;
 		/**
-		 * Column on which the range ends in line `endLineNumber`.
+		 * range가 끝나는 line `endLineNumber`에서 Column 번호
 		 */
 		readonly endColumn: number;
 	}
 
 	/**
-	 * A range in the editor. (startLineNumber,startColumn) is <= (endLineNumber,endColumn)
+	 * 에디터에서 범위(range)
+	 * - (start·Line·Number, start·Column) <= (end·Line·Number, end·Column)
 	 */
 	export class Range {
 		/**
-		 * Line number on which the range starts (starts at 1).
+		 * range가 시작하는 line 번호 (`1`부터 시작)
 		 */
 		readonly startLineNumber: number;
 		/**
-		 * Column on which the range starts in line `startLineNumber` (starts at 1).
+		 * range가 시작하는 line `startLineNumber`에서 Column 번호 (`1`부터 시작).
 		 */
 		readonly startColumn: number;
 		/**
-		 * Line number on which the range ends.
+		 * range가 끝나는 line 번호
 		 */
 		readonly endLineNumber: number;
 		/**
-		 * Column on which the range ends in line `endLineNumber`.
+		 * range가 끝나는 line `endLineNumber`에서 Column 번호
 		 */
 		readonly endColumn: number;
 		constructor(startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number);
 		/**
-		 * Test if this range is empty.
+		 * `range`가 0인지 체크
 		 */
 		isEmpty(): boolean;
 		/**
-		 * Test if `range` is empty.
+		 * `range`가 0인지 체크
 		 */
 		static isEmpty(range: IRange): boolean;
 		/**
-		 * Test if position is in this range. If the position is at the edges, will return true.
+		 * `position`이 range `this` 범위 안에 있는지 체크
+		 *
+		 * - `position`이 경계에 있으면 true 반환
 		 */
 		containsPosition(position: IPosition): boolean;
 		/**
-		 * Test if `position` is in `range`. If the position is at the edges, will return true.
+		 * `position`이 `range` 범위 안에 있는지 체크
+		 *
+		 * - `position`이 경계에 있으면 true 반환
 		 */
 		static containsPosition(range: IRange, position: IPosition): boolean;
 		/**
-		 * Test if range is in this range. If the range is equal to this range, will return true.
+		 * `otherRange`가 `this` range 범위 안에 있는지 체크
+		 *
+		 * - 두 range가 동일하면 true 반환
 		 */
 		containsRange(range: IRange): boolean;
 		/**
-		 * Test if `otherRange` is in `range`. If the ranges are equal, will return true.
+		 * `otherRange`가 `range` 범위 안에 있는지 체크
+		 *
+		 * - 두 range가 동일하면 true 반환
 		 */
 		static containsRange(range: IRange, otherRange: IRange): boolean;
 		/**
-		 * Test if `range` is strictly in this range. `range` must start after and end before this range for the result to be true.
+		 * Test if `range` is strictly in this range.
+		 *
+		 * - `this` range가 `range`보다 먼저 시작하고, 나중에 끝나야만 true 반환.
 		 */
 		strictContainsRange(range: IRange): boolean;
 		/**
-		 * Test if `otherRange` is strictly in `range` (must start after, and end before). If the ranges are equal, will return false.
+		 * Test if `otherRange` is strictly in `range`
+		 *
+		 * - `this` range가 `range`보다 먼저 시작하고, 나중에 끝나야만 true 반환
+		 * - 두 range가 동일하면 false 반환
 		 */
 		static strictContainsRange(range: IRange, otherRange: IRange): boolean;
 		/**
-		 * A reunion of the two ranges.
-		 * The smallest position will be used as the start point, and the largest one as the end point.
+		 * 두 `range` 결합하기
+		 *
+		 * - 가장 작은 position이 시작점이 되고, 가장 큰 position이 끝점이 됨
 		 */
 		plusRange(range: IRange): Range;
 		/**
-		 * A reunion of the two ranges.
-		 * The smallest position will be used as the start point, and the largest one as the end point.
+		 * 두 `range` 결합하기
+		 *
+		 * - 가장 작은 position이 시작점이 되고, 가장 큰 position이 끝점이 됨
 		 */
 		static plusRange(a: IRange, b: IRange): Range;
 		/**
-		 * A intersection of the two ranges.
+		 * 두 range가 겹치는 범위 구하기
 		 */
 		intersectRanges(range: IRange): Range | null;
 		/**
-		 * A intersection of the two ranges.
+		 * 두 range가 겹치는 범위 구하기
 		 */
 		static intersectRanges(a: IRange, b: IRange): Range | null;
 		/**
-		 * Test if this range equals other.
+		 * range `this`와 range `other`가 동일한지 체크
 		 */
 		equalsRange(other: IRange | null | undefined): boolean;
 		/**
-		 * Test if range `a` equals `b`.
+		 * range `a`와 range `b`가 동일한지 체크
 		 */
 		static equalsRange(a: IRange | null | undefined, b: IRange | null | undefined): boolean;
 		/**
-		 * Return the end position (which will be after or equal to the start position)
+		 * 끝나는 위치(position) 반환
+		 *
+		 * (시작 위치보다 뒤에 있거나 같음)
 		 */
 		getEndPosition(): Position;
 		/**
-		 * Return the end position (which will be after or equal to the start position)
+		 * 끝나는 위치(position) 반환
+		 *
+		 * (시작 위치보다 뒤에 있거나 같음)
 		 */
 		static getEndPosition(range: IRange): Position;
 		/**
-		 * Return the start position (which will be before or equal to the end position)
+		 * 시작 위치(position) 반환
+		 *
+		 * (끝나는 위치보다 앞에 있거나 같음)
 		 */
 		getStartPosition(): Position;
 		/**
-		 * Return the start position (which will be before or equal to the end position)
+		 * 시작 위치(position) 반환
+		 *
+		 * (끝나는 위치보다 앞에 있거나 같음)
 		 */
 		static getStartPosition(range: IRange): Position;
 		/**
-		 * Transform to a user presentable string representation.
+		 * `"[line,column -> line,column]"` 형태의 문자열로 반환 (user presentable string)
 		 */
 		toString(): string;
 		/**
-		 * Create a new range using this range's start position, and using endLineNumber and endColumn as the end position.
+		 * 새로운 Range 반환
+		 *
+		 * Create a new range using `this` range's start position, and using `endLineNumber` and `endColumn` as the end position.
 		 */
 		setEndPosition(endLineNumber: number, endColumn: number): Range;
 		/**
-		 * Create a new range using this range's end position, and using startLineNumber and startColumn as the start position.
+		 * 새로운 Range 반환
+		 *
+		 * Create a new range using `this` range's end position, and using `startLineNumber` and `startColumn` as the start position.
 		 */
 		setStartPosition(startLineNumber: number, startColumn: number): Range;
 		/**
-		 * Create a new empty range using this range's start position.
+		 * 새로운 Range 반환
+		 *
+		 * Create a new empty range using `this` range's start position.
 		 */
 		collapseToStart(): Range;
 		/**
-		 * Create a new empty range using this range's start position.
+		 * 새로운 Range 반환
+		 *
+		 * Create a new empty range using `this` range's start position.
 		 */
 		static collapseToStart(range: IRange): Range;
 		/**
-		 * Create a new empty range using this range's end position.
+		 * 새로운 Range 반환
+		 *
+		 * Create a new empty range using `this` range's end position.
 		 */
 		collapseToEnd(): Range;
 		/**
-		 * Create a new empty range using this range's end position.
+		 * 새로운 Range 반환
+		 *
+		 * Create a new empty range using `this` range's end position.
 		 */
 		static collapseToEnd(range: IRange): Range;
 		/**
-		 * Moves the range by the given amount of lines.
+		 * 새로운 Range 반환
+		 *
+		 * Moves `this` range by the given amount of lines.
 		 */
 		delta(lineCount: number): Range;
+		/**
+		 * 새로운 Range 반환
+		 *
+		 * 시작 위치가 `start`이고, 끝나는 위치가 `end`인 Range 반환
+		 */
 		static fromPositions(start: IPosition, end?: IPosition): Range;
 		/**
-		 * Create a `Range` from an `IRange`.
+		 * `IRange`로부터 `Range` 만들어서 반환
 		 */
 		static lift(range: undefined | null): null;
 		static lift(range: IRange): Range;
 		static lift(range: IRange | undefined | null): Range | null;
 		/**
-		 * Test if `obj` is an `IRange`.
+		 * `obj`가 `IRange`인지 체크.
 		 */
 		static isIRange(obj: any): obj is IRange;
 		/**
-		 * Test if the two ranges are touching in any way.
+		 * 두 range가 서로 겹치거나 만나는지 체크
 		 */
 		static areIntersectingOrTouching(a: IRange, b: IRange): boolean;
 		/**
-		 * Test if the two ranges are intersecting. If the ranges are touching it returns true.
+		 * 두 range가 서로 겹치는지 체크
+		 *
+		 * - 두 range의 끝이 만나기만 하는 경우에는 false 반환.
 		 */
 		static areIntersecting(a: IRange, b: IRange): boolean;
 		/**
-		 * A function that compares ranges, useful for sorting ranges
-		 * It will first compare ranges on the startPosition and then on the endPosition
+		 * range 비교하는 함수, 정렬(sort)할 때 유용함
+		 * - 비교 우선순위 :
+		 * 1. start Line Number
+		 * 2. start Column
+		 * 3. end Line Number
+		 * 4. end Column
 		 */
 		static compareRangesUsingStarts(a: IRange | null | undefined, b: IRange | null | undefined): number;
 		/**
-		 * A function that compares ranges, useful for sorting ranges
-		 * It will first compare ranges on the endPosition and then on the startPosition
+		 * range 비교하는 함수, 정렬(sort)할 때 유용함
+		 * - 비교 우선순위 :
+		 * 1. end Line Number
+		 * 2. end Column
+		 * 3. start Line Number
+		 * 4. start Column
 		 */
 		static compareRangesUsingEnds(a: IRange, b: IRange): number;
 		/**
-		 * Test if the range spans multiple lines.
+		 * `range`가 여러줄에 걸쳐 있는지 체크
 		 */
 		static spansMultipleLines(range: IRange): boolean;
 		toJSON(): IRange;
 	}
 
 	/**
-	 * A selection in the editor.
-	 * The selection is a range that has an orientation.
+	 * 에디터에서 선택범위(selection)
+	 *
+	 * 선택범위는 방향(orientation)이 있는 범위입니다
 	 */
 	export interface ISelection {
 		/**
-		 * The line number on which the selection has started.
+		 * line 번호 on which the selection has started.
 		 */
 		readonly selectionStartLineNumber: number;
 		/**
-		 * The column on `selectionStartLineNumber` where the selection has started.
+		 * column 번호 on `selectionStartLineNumber` where the selection has started.
 		 */
 		readonly selectionStartColumn: number;
 		/**
-		 * The line number on which the selection has ended.
+		 * line 번호 on which the selection has ended.
 		 */
 		readonly positionLineNumber: number;
 		/**
-		 * The column on `positionLineNumber` where the selection has ended.
+		 * column 번호 on `positionLineNumber` where the selection has ended.
 		 */
 		readonly positionColumn: number;
 	}
 
 	/**
-	 * A selection in the editor.
-	 * The selection is a range that has an orientation.
+	 * 에디터에서 선택범위(selection)
+	 *
+	 * 선택범위는 방향(orientation)이 있는 범위입니다
 	 */
 	export class Selection extends Range {
 		/**
-		 * The line number on which the selection has started.
+		 * line 번호 on which the selection has started.
 		 */
 		readonly selectionStartLineNumber: number;
 		/**
-		 * The column on `selectionStartLineNumber` where the selection has started.
+		 * column 번호 on `selectionStartLineNumber` where the selection has started.
 		 */
 		readonly selectionStartColumn: number;
 		/**
-		 * The line number on which the selection has ended.
+		 * line 번호 on which the selection has ended.
 		 */
 		readonly positionLineNumber: number;
 		/**
-		 * The column on `positionLineNumber` where the selection has ended.
+		 * column 번호 on `positionLineNumber` where the selection has ended.
 		 */
 		readonly positionColumn: number;
 		constructor(selectionStartLineNumber: number, selectionStartColumn: number, positionLineNumber: number, positionColumn: number);
 		/**
-		 * Transform to a human-readable representation.
+		 * `"[line,column -> line,column]"` 형태의 문자열로 반환 (human-readable)
 		 */
 		toString(): string;
 		/**
-		 * Test if equals other selection.
+		 * 체크 if equals other selection.
 		 */
 		equalsSelection(other: ISelection): boolean;
 		/**
-		 * Test if the two selections are equal.
+		 * 체크 if the two selections are equal.
 		 */
 		static selectionsEqual(a: ISelection, b: ISelection): boolean;
 		/**
-		 * Get directions (LTR or RTL).
+		 * 선택범위 방향 얻기 (`LTR` 또는 `RTL`).
 		 */
 		getDirection(): SelectionDirection;
 		/**
-		 * Create a new selection with a different `positionLineNumber` and `positionColumn`.
+		 * 새로운 Selection 반환
+		 *
+		 * 선택 시작 지점은 같고, 종료 지점(`positionLineNumber`, `positionColumn`)이 다른 새로운 선택범위
 		 */
 		setEndPosition(endLineNumber: number, endColumn: number): Selection;
 		/**
-		 * Get the position at `positionLineNumber` and `positionColumn`.
+		 * 선택 종료 지점(`positionLineNumber`, `positionColumn`) 얻기
 		 */
 		getPosition(): Position;
 		/**
-		 * Get the position at the start of the selection.
-		*/
+		 * 선택 시작 지점 얻기
+		 */
 		getSelectionStart(): Position;
 		/**
+		 * 새로운 Selection 반환
+		 *
 		 * Create a new selection with a different `selectionStartLineNumber` and `selectionStartColumn`.
 		 */
 		setStartPosition(startLineNumber: number, startColumn: number): Selection;
 		/**
+		 * 새로운 Selection 반환
+		 *
 		 * Create a `Selection` from one or two positions
 		 */
 		static fromPositions(start: IPosition, end?: IPosition): Selection;
 		/**
+		 * 새로운 Selection 반환
+		 *
 		 * Creates a `Selection` from a range, given a direction.
 		 */
 		static fromRange(range: Range, direction: SelectionDirection): Selection;
 		/**
-		 * Create a `Selection` from an `ISelection`.
+		 * `ISelection`으로부터 `Selection` 만들기
 		 */
 		static liftSelection(sel: ISelection): Selection;
 		/**
-		 * `a` equals `b`.
+		 * 두 선택범위 배열 `a`와 `b`가 동일한지 체크
 		 */
 		static selectionsArrEqual(a: ISelection[], b: ISelection[]): boolean;
 		/**
-		 * Test if `obj` is an `ISelection`.
+		 * `obj`가 `ISelection`인지 체크
 		 */
 		static isISelection(obj: any): obj is ISelection;
 		/**
-		 * Create with a direction.
+		 * 새로운 Selection 반환
+		 * - 선택 방향도 지정함
 		 */
 		static createWithDirection(startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number, direction: SelectionDirection): Selection;
 	}
 
 	/**
-	 * The direction of a selection.
+	 * 선택범위(selection)의 방향
 	 */
 	export enum SelectionDirection {
 		/**
-		 * The selection starts above where it ends.
+		 * 위에서 아래로 선택함
 		 */
 		LTR = 0,
 		/**
-		 * The selection starts below where it ends.
+		 * 아래에서 위로 선택함
 		 */
 		RTL = 1
 	}
@@ -1572,6 +1644,9 @@ declare namespace monaco.editor {
 
 	/**
 	 * Vertical Lane in the overview ruler of the editor.
+	 *
+	 * `Left` = 1, `Center` = 2, `Right` = 4, `Full` = 7
+	 * - 참고: `overview ruler` - https://stackoverflow.com/questions/50593516/colored-pixels-in-scrollbar-in-vs-code/51684408#51684408
 	 */
 	export enum OverviewRulerLane {
 		Left = 1,
@@ -1582,6 +1657,9 @@ declare namespace monaco.editor {
 
 	/**
 	 * Vertical Lane in the glyph margin of the editor.
+	 *
+	 * `Left` = 1, `Right` = 2
+	 * - 참고: `glyph margin` - https://microchipdeveloper.com/mplabx:glyph-margin
 	 */
 	export enum GlyphMarginLane {
 		Left = 1,
@@ -1590,6 +1668,9 @@ declare namespace monaco.editor {
 
 	/**
 	 * Position in the minimap to render the decoration.
+	 *
+	 * `Inline` = 1, `Gutter` = 2
+	 * - 참고: `Gutter` - https://support.smartbear.com/testcomplete/docs/scripting/code-editor/window/gutter.html
 	 */
 	export enum MinimapPosition {
 		Inline = 1,
@@ -1599,11 +1680,13 @@ declare namespace monaco.editor {
 	export interface IDecorationOptions {
 		/**
 		 * CSS color to render.
+		 *
 		 * e.g.: rgba(100, 100, 100, 0.5) or a color from the color registry
 		 */
 		color: string | ThemeColor | undefined;
 		/**
 		 * CSS color to render.
+		 *
 		 * e.g.: rgba(100, 100, 100, 0.5) or a color from the color registry
 		 */
 		darkColor?: string | ThemeColor;
@@ -1812,7 +1895,9 @@ declare namespace monaco.editor {
 	}
 
 	/**
-	 * End of line character preference.
+	 * EOL character preference.
+	 *
+	 * `TextDefined` = 0, `LF` = 1, `CRLF` = 2
 	 */
 	export enum EndOfLinePreference {
 		/**
@@ -1831,6 +1916,8 @@ declare namespace monaco.editor {
 
 	/**
 	 * The default end of line to use when instantiating models.
+	 *
+	 * `LF` = 1, `CRLF` = 2
 	 */
 	export enum DefaultEndOfLine {
 		/**
@@ -1845,6 +1932,8 @@ declare namespace monaco.editor {
 
 	/**
 	 * End of line character preference.
+	 *
+	 * `LF` = 0, `CRLF` = 1
 	 */
 	export enum EndOfLineSequence {
 		/**
@@ -1865,11 +1954,13 @@ declare namespace monaco.editor {
 
 	export interface IValidEditOperation {
 		/**
-		 * The range to replace. This can be empty to emulate a simple insert.
+		 * The range to replace. \
+		 * This can be empty to emulate a simple insert.
 		 */
 		range: Range;
 		/**
-		 * The text to replace with. This can be empty to emulate a simple delete.
+		 * The text to replace with. \
+		 * This can be empty to emulate a simple delete.
 		 */
 		text: string;
 	}
@@ -1908,6 +1999,12 @@ declare namespace monaco.editor {
 		bracketColorizationOptions?: BracketPairColorizationOptions;
 	}
 
+	/**
+	 * 프로퍼티s \
+	 * -`_findMatchBrand`: void = undefined \
+	 * -public readonly `range`: Range \
+	 * -public readonly `matches`: string[] | null
+	 */
 	export class FindMatch {
 		_findMatchBrand: void;
 		readonly range: Range;
@@ -1935,7 +2032,7 @@ declare namespace monaco.editor {
 	}
 
 	/**
-	 * A model.
+	 * 모델 (A model)
 	 */
 	export interface ITextModel {
 		/**
@@ -2427,24 +2524,28 @@ declare namespace monaco.editor {
 	 * A range of lines (1-based).
 	 */
 	export class LineRange {
+		/** `Range` 받아서 새로운 `LineRange` 만들기  */
 		static fromRange(range: Range): LineRange;
+		/** `a` 범위에서 `b` 범위 빼기  */
 		static subtract(a: LineRange, b: LineRange | undefined): LineRange[];
 		/**
-		 * @param lineRanges An array of sorted line ranges.
+		 * 여러개의 LineRange 배열들을 하나로 합치기
+		 * @param lineRanges 정렬된 line range 배열
 		 */
 		static joinMany(lineRanges: readonly (readonly LineRange[])[]): readonly LineRange[];
 		/**
-		 * @param lineRanges1 Must be sorted.
-		 * @param lineRanges2 Must be sorted.
+		 * 두 LineRange 배열을 하나로 합치기
+		 * @param lineRanges1 반드시 정렬(sort)되어 있어야 함
+		 * @param lineRanges2 반드시 정렬(sort)되어 있어야 함
 		 */
 		static join(lineRanges1: readonly LineRange[], lineRanges2: readonly LineRange[]): readonly LineRange[];
 		static ofLength(startLineNumber: number, length: number): LineRange;
 		/**
-		 * The start line number.
+		 * 시작 line 번호
 		 */
 		readonly startLineNumber: number;
 		/**
-		 * The end line number (exclusive).
+		 * 마지막 line 번호 (exclusive).
 		 */
 		readonly endLineNumberExclusive: number;
 		constructor(startLineNumber: number, endLineNumberExclusive: number);
@@ -2725,7 +2826,7 @@ declare namespace monaco.editor {
 	}
 
 	/**
-	 * An editor.
+	 * 에디터 (an editor)
 	 */
 	export interface IEditor {
 		/**
@@ -3088,7 +3189,7 @@ declare namespace monaco.editor {
 	}
 
 	/**
-	 * Describes the reason the cursor has changed its position.
+	 * 커서가 위치를 바꾼 이유s
 	 */
 	export enum CursorChangeReason {
 		/**
@@ -3096,7 +3197,7 @@ declare namespace monaco.editor {
 		 */
 		NotSet = 0,
 		/**
-		 * A `model.setValue()` was called.
+		 * `model.setValue()`가 호출되었음
 		 */
 		ContentFlush = 1,
 		/**
@@ -3108,21 +3209,27 @@ declare namespace monaco.editor {
 		 */
 		Explicit = 3,
 		/**
-		 * There was a Paste.
+		 * 붙여넣기(Paste) 했음
 		 */
 		Paste = 4,
 		/**
-		 * There was an Undo.
+		 * 뒤로 가기(Undo) 했음
 		 */
 		Undo = 5,
 		/**
-		 * There was a Redo.
+		 * 앞으로 가기(Redo) 했음
 		 */
 		Redo = 6
 	}
 
 	/**
-	 * An event describing that the cursor position has changed.
+	 * An event - 커서 위치(position)가 바뀜
+	 *
+	 * -`position` \
+	 * -`secondaryPositions`
+	 *
+	 * -`source` \
+	 * -`reason`
 	 */
 	export interface ICursorPositionChangedEvent {
 		/**
@@ -3144,7 +3251,17 @@ declare namespace monaco.editor {
 	}
 
 	/**
-	 * An event describing that the cursor selection has changed.
+	 * An event - 커서 선택범위(selection)가 바뀜
+	 *
+	 * -`selection` \
+	 * -`secondarySelections` \
+	 * -`modelVersionId`
+	 *
+	 * -`oldSelections` \
+	 * -`oldModelVersionId`
+	 *
+	 * -`source` \
+	 * -`reason`
 	 */
 	export interface ICursorSelectionChangedEvent {
 		/**
@@ -4431,6 +4548,10 @@ declare namespace monaco.editor {
 
 	/**
 	 * Configuration options for quick suggestions
+	 *
+	 * -`other` = 'on' | 'inline' | 'off' \
+	 * -`comments` = 'on' | 'inline' | 'off' \
+	 * -`strings` = 'on' | 'inline' | 'off'
 	 */
 	export interface IQuickSuggestionsOptions {
 		other?: boolean | QuickSuggestionsValue;
@@ -4438,6 +4559,13 @@ declare namespace monaco.editor {
 		strings?: boolean | QuickSuggestionsValue;
 	}
 
+	/**
+	 * Configuration options for quick suggestions
+	 *
+	 * -`other` = 'on' | 'inline' | 'off' \
+	 * -`comments` = 'on' | 'inline' | 'off' \
+	 * -`strings` = 'on' | 'inline' | 'off'
+	 */
 	export interface InternalQuickSuggestionsOptions {
 		readonly other: QuickSuggestionsValue;
 		readonly comments: QuickSuggestionsValue;
@@ -5696,11 +5824,11 @@ declare namespace monaco.editor {
 	}
 
 	/**
-	 * A rich code editor.
+	 * 리치 코드 에디터 (A rich code editor)
 	 */
 	export interface ICodeEditor extends IEditor {
 		/**
-		 * An event emitted when the content of the current model has changed.
+		 * 이벤트 - 현재 모델의 컨텐츠가 바뀔 때마다 발생 (ex.글자 입력)
 		 * @event
 		 */
 		readonly onDidChangeModelContent: IEvent<IModelContentChangedEvent>;
@@ -5730,7 +5858,7 @@ declare namespace monaco.editor {
 		 */
 		readonly onDidChangeCursorPosition: IEvent<ICursorPositionChangedEvent>;
 		/**
-		 * An event emitted when the cursor selection has changed.
+		 * 이벤트 - 커서 선택범위?(selection)가 바뀔 때마다 발생
 		 * @event
 		 */
 		readonly onDidChangeCursorSelection: IEvent<ICursorSelectionChangedEvent>;
@@ -5765,11 +5893,11 @@ declare namespace monaco.editor {
 		 */
 		readonly onDidBlurEditorWidget: IEvent<void>;
 		/**
-		 * An event emitted after composition has started.
+		 * 이벤트 - 한글 조합을 시작할 때마다 발생
 		 */
 		readonly onDidCompositionStart: IEvent<void>;
 		/**
-		 * An event emitted after composition has ended.
+		 * 이벤트 - 한글 조합이 끝날 때마다 발생
 		 */
 		readonly onDidCompositionEnd: IEvent<void>;
 		/**
@@ -6607,7 +6735,7 @@ declare namespace monaco.languages {
 		 */
 		brackets?: CharacterPair[];
 		/**
-		 * The language's word definition.
+		 * 단어 정규표현식 정의 (The language's word definition)
 		 * If the language supports Unicode identifiers (e.g. JavaScript), it is preferable
 		 * to provide a word definition that uses exclusion of known separators.
 		 * e.g.: A regex that matches anything except known separators (and dot is allowed to occur in a floating point number):
@@ -7002,6 +7130,10 @@ declare namespace monaco.languages {
 
 	/**
 	 * How a suggest provider was triggered.
+	 *
+	 * -`Invoke` = 0, \
+	 * -`TriggerCharacter` = 1, \
+	 * -`TriggerForIncompleteCompletions` = 2
 	 */
 	export enum CompletionTriggerKind {
 		Invoke = 0,

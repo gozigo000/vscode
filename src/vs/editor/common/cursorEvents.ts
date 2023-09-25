@@ -1,13 +1,19 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export const enum `CursorChangeReason`
+ * export interface `ICursorPositionChangedEvent`
+ * export interface `ICursorSelectionChangedEvent`
  *--------------------------------------------------------------------------------------------*/
 
 import { Position } from 'vs/editor/common/core/position';
 import { Selection } from 'vs/editor/common/core/selection';
 
 /**
- * Describes the reason the cursor has changed its position.
+ * 커서가 위치를 바꾼 이유s
  */
 export const enum CursorChangeReason {
 	/**
@@ -15,7 +21,7 @@ export const enum CursorChangeReason {
 	 */
 	NotSet = 0,
 	/**
-	 * A `model.setValue()` was called.
+	 * `model.setValue()`가 호출되었음
 	 */
 	ContentFlush = 1,
 	/**
@@ -27,20 +33,26 @@ export const enum CursorChangeReason {
 	 */
 	Explicit = 3,
 	/**
-	 * There was a Paste.
+	 * 붙여넣기(Paste) 했음
 	 */
 	Paste = 4,
 	/**
-	 * There was an Undo.
+	 * 뒤로 가기(Undo) 했음
 	 */
 	Undo = 5,
 	/**
-	 * There was a Redo.
+	 * 앞으로 가기(Redo) 했음
 	 */
 	Redo = 6,
 }
 /**
- * An event describing that the cursor position has changed.
+ * An event - 커서 위치(position)가 바뀜
+ *
+ * -`position` \
+ * -`secondaryPositions`
+ *
+ * -`source` \
+ * -`reason`
  */
 export interface ICursorPositionChangedEvent {
 	/**
@@ -61,7 +73,17 @@ export interface ICursorPositionChangedEvent {
 	readonly source: string;
 }
 /**
- * An event describing that the cursor selection has changed.
+ * An event - 커서 선택범위(selection)가 바뀜
+ *
+ * -`selection` \
+ * -`secondarySelections` \
+ * -`modelVersionId`
+ *
+ * -`oldSelections` \
+ * -`oldModelVersionId`
+ *
+ * -`source` \
+ * -`reason`
  */
 export interface ICursorSelectionChangedEvent {
 	/**

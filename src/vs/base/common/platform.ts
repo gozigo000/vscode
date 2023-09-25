@@ -275,6 +275,7 @@ export const OS = (_isMacintosh || _isIOS ? OperatingSystem.Macintosh : (_isWind
 
 let _isLittleEndian = true;
 let _isLittleEndianComputed = false;
+/** 리틀인디안 여부 체크  */
 export function isLittleEndian(): boolean {
 	if (!_isLittleEndianComputed) {
 		_isLittleEndianComputed = true;

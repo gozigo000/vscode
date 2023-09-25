@@ -3,6 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [개요]
+ * export class "CodeApplication" extends Disposable
+ */
+
 import { app, BrowserWindow, dialog, protocol, session, Session, systemPreferences, WebFrameMain } from 'electron';
 import { addUNCHostToAllowlist, disableUNCAccessRestrictions } from 'vs/base/node/unc';
 import { validatedIpcMain } from 'vs/base/parts/ipc/electron-main/ipcMain';
@@ -125,14 +130,16 @@ import { NODE_REMOTE_RESOURCE_CHANNEL_NAME, NODE_REMOTE_RESOURCE_IPC_METHOD_NAME
 import { Lazy } from 'vs/base/common/lazy';
 
 /**
- * The main VS Code application. There will only ever be one instance,
- * even if the user starts many instances (e.g. from the command line).
+ * 메인 VS Code 애플리캐이션
+ *
+ * 사용자가 많은 인스턴스를 시작하더라도(ex.명령줄에서) 인스턴스는 오직 하나뿐입니다.
  */
 export class CodeApplication extends Disposable {
 
 	private windowsMainService: IWindowsMainService | undefined;
 	private nativeHostMainService: INativeHostMainService | undefined;
 
+	// 생성자
 	constructor(
 		private readonly mainProcessNodeIpcServer: NodeIPCServer,
 		private readonly userEnv: IProcessEnvironment,
@@ -153,6 +160,7 @@ export class CodeApplication extends Disposable {
 		this.registerListeners();
 	}
 
+	// 생성자 관련
 	private configureSession(): void {
 
 		//#region Security related measures (https://electronjs.org/docs/tutorial/security)
@@ -344,6 +352,7 @@ export class CodeApplication extends Disposable {
 		//#endregion
 	}
 
+	// 생성자 관련
 	private registerListeners(): void {
 
 		// We handle uncaught exceptions here to prevent electron from opening a dialog to the user
@@ -484,6 +493,7 @@ export class CodeApplication extends Disposable {
 		//#endregion
 	}
 
+	// 생성자 관련
 	private validateNlsPath(pathSegments: unknown[]): URI | undefined {
 		let path: string | undefined = undefined;
 
@@ -504,6 +514,7 @@ export class CodeApplication extends Disposable {
 		return URI.file(path);
 	}
 
+	// 생성자 관련
 	private onUnexpectedError(error: Error): void {
 		if (error) {
 
@@ -523,6 +534,7 @@ export class CodeApplication extends Disposable {
 		}
 	}
 
+	// 시작!
 	async startup(): Promise<void> {
 		this.logService.debug('Starting VS Code');
 		this.logService.debug(`from: ${this.environmentMainService.appRoot}`);
@@ -608,6 +620,8 @@ export class CodeApplication extends Disposable {
 		}, 2500));
 		eventuallyPhaseScheduler.schedule();
 	}
+
+	// 이하는 모두 시작 관련된 private 함수
 
 	private setupProtocolUrlHandlers(accessor: ServicesAccessor, mainProcessElectronServer: ElectronIPCServer): IInitialProtocolUrls | undefined {
 		const windowsMainService = this.windowsMainService = accessor.get(IWindowsMainService);

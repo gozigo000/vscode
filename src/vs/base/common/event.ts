@@ -898,7 +898,6 @@ const forEachListener = <T>(listeners: ListenerOrListeners<T>, fn: (c: ListenerC
 	class Document {
 
 		private readonly _onDidChange = new Emitter<(value:string)=>any>();
-
 		public onDidChange = this._onDidChange.event;
 
 		// getter-style

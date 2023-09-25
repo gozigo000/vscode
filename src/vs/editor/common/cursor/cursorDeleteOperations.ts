@@ -211,6 +211,7 @@ export class DeleteOperations {
 		}
 	}
 
+
 	public static cut(config: CursorConfiguration, model: ICursorSimpleModel, selections: Selection[]): EditOperationResult {
 		const commands: Array<ICommand | null> = [];
 		let lastCutRange: Range | null = null;

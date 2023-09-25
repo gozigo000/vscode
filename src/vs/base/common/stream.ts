@@ -9,73 +9,74 @@ import { DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
 
 /**
  * The payload that flows in readable stream events.
+ * - 참고: https://ko.wikipedia.org/wiki/페이로드_(컴퓨팅)
+ *
  */
 export type ReadableStreamEventPayload<T> = T | Error | 'end';
 
 export interface ReadableStreamEvents<T> {
 
 	/**
-	 * The 'data' event is emitted whenever the stream is
-	 * relinquishing ownership of a chunk of data to a consumer.
+	 * `data`이벤트는 스트림이 소비자(consumer)에게 데이터 덩어리의
+	 * 소유권을 양도할 때마다 방출됩니다.
 	 *
-	 * NOTE: PLEASE UNDERSTAND THAT ADDING A DATA LISTENER CAN
-	 * TURN THE STREAM INTO FLOWING MODE. IT IS THEREFOR THE
-	 * LAST LISTENER THAT SHOULD BE ADDED AND NOT THE FIRST
+	 * - 주의: DATA 리스너를 추가하는 것은 스트림을 흐름 모드(FLOWING
+	 * MODE)로 전환할 수 있습니다. 따라서, 추가되어야 하는 리스너는
+	 * 첫 번째 리스너가 아니라 마지막 리스너입니다.
 	 *
-	 * Use `listenStream` as a helper method to listen to
-	 * stream events in the right order.
+	 * - 스트림 이벤트를 올바른 순서대로 들을 수 있도록 `listenStream`을
+	 * 헬퍼 메서드로 사용하세요
 	 */
 	on(event: 'data', callback: (data: T) => void): void;
 
 	/**
-	 * Emitted when any error occurs.
+	 * `error`이벤트는 에러가 발생할 때마다 방출됩니다.
 	 */
 	on(event: 'error', callback: (err: Error) => void): void;
 
 	/**
-	 * The 'end' event is emitted when there is no more data
-	 * to be consumed from the stream. The 'end' event will
-	 * not be emitted unless the data is completely consumed.
+	 * `end`이벤트는 스트림에서 더 이상 소비(consume)할 데이터가 없을 때 방출됩니다.
+	 * - 데이터가 완전히 소비되기 전까지 `end`이벤트는 방출되지 않습니다.
 	 */
 	on(event: 'end', callback: () => void): void;
 }
 
 /**
- * A interface that emulates the API shape of a node.js readable
- * stream for use in native and web environments.
+ * 네이티브 및 웹 환경에서 사용하기 위한 node.js readable 스트림의
+ * API 형태를 에뮬레이트하는 인터페이스입니다.
  */
 export interface ReadableStream<T> extends ReadableStreamEvents<T> {
 
 	/**
-	 * Stops emitting any events until resume() is called.
+	 * resume()이 호출되기 전까지 어떠한 이벤트도 방출하지 않습니다.
 	 */
 	pause(): void;
 
 	/**
-	 * Starts emitting events again after pause() was called.
+	 * pause()가 호출되어 이벤트 방출이 멈춘 상태에서 다시 이벤트를 방출하기 시작합니다.
 	 */
 	resume(): void;
 
 	/**
-	 * Destroys the stream and stops emitting any event.
+	 * 스트림을 파괴하고, 모든 이벤트 방출을 멈춥니다.
 	 */
 	destroy(): void;
 
 	/**
-	 * Allows to remove a listener that was previously added.
+	 * 이전에 추가되었던 리스너를 제거합니다.
 	 */
 	removeListener(event: string, callback: Function): void;
 }
 
 /**
- * A interface that emulates the API shape of a node.js readable
- * for use in native and web environments.
+ * 네이티브 및 웹 환경에서 사용하기 위한 node.js readable의 API 형태를
+ * 에뮬레이트하는 인터페이스입니다.
  */
 export interface Readable<T> {
 
 	/**
-	 * Read data from the underlying source. Will return
-	 * null to indicate that no more data can be read.
+	 * 기본 소스(underlying source)에서 데이터를 읽습니다.
+	 * - 더 이상 데이터를 읽을 수 없으면 null을 반환합니다.
 	 */
 	read(): T | null;
 }
@@ -90,8 +91,8 @@ export function isReadable<T>(obj: unknown): obj is Readable<T> {
 }
 
 /**
- * A interface that emulates the API shape of a node.js writeable
- * stream for use in native and web environments.
+ * 네이티브 및 웹 환경에서 사용하기 위한 node.js writeable 스트림의 API 형태를
+ * 에뮬레이트하는 인터페이스입니다.
  */
 export interface WriteableStream<T> extends ReadableStream<T> {
 

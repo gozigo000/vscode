@@ -3,6 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [개요]
+ * export class "CodeApplication" extends Disposable
+ */
+
 import 'vs/platform/update/common/update.config.contribution';
 
 import { app, dialog } from 'electron';
@@ -73,12 +78,11 @@ import { SaveStrategy, StateService } from 'vs/platform/state/node/stateService'
 import { FileUserDataProvider } from 'vs/platform/userData/common/fileUserDataProvider';
 
 /**
- * The main VS Code entry point.
+ * ### 메인 VS Code 진입점 ####
  *
- * Note: This class can exist more than once for example when VS Code is already
- * running and a second instance is started from the command line. It will always
- * try to communicate with an existing instance to prevent that 2 VS Code instances
- * are running at the same time.
+ * Note: 이 클래스는, VS 코드가 이미 실행 중이고 두 번째 인스턴스가 명령줄에서 시작되는 경우
+ * 등과 같이, 두 개 이상 존재할 수 있습니다. 항상 기존 인스턴스와 통신하여 2개의 VS 코드 인스턴스가
+ * 동시에 실행되는 것을 방지합니다.
  */
 class CodeMain {
 
@@ -93,27 +97,27 @@ class CodeMain {
 
 	private async startup(): Promise<void> {
 
-		// Set the error handler early enough so that we are not getting the
-		// default electron error dialog popping up
+		// 디폴트 일렉트론 에러 대화상자가 나타나지 않도록 에러 핸들러를 충분히 일찍
+		// 설정합니다
 		setUnexpectedErrorHandler(err => console.error(err));
 
-		// Create services
+		// 서비스들 생성 (Create services)
 		const [instantiationService, instanceEnvironment, environmentMainService, configurationService, stateMainService, bufferLogService, productService, userDataProfilesMainService] = this.createServices();
 
 		try {
 
-			// Init services
+			// 서비스들 초기화 (Init services)
 			try {
 				await this.initServices(environmentMainService, userDataProfilesMainService, configurationService, stateMainService, productService);
 			} catch (error) {
 
-				// Show a dialog for errors that can be resolved by the user
+				// 사용자가 해결할 수 있는 오류에 대한 대화상자 보여주기
 				this.handleStartupDataDirError(environmentMainService, productService, error);
 
 				throw error;
 			}
 
-			// Startup
+			// 시작 (Startup)
 			await instantiationService.invokeFunction(async accessor => {
 				const logService = accessor.get(ILogService);
 				const lifecycleMainService = accessor.get(ILifecycleMainService);
@@ -464,7 +468,7 @@ class CodeMain {
 		lifecycleMainService.kill(exitCode);
 	}
 
-	//#region Command line arguments utilities
+	//#region 명령줄 인수 유틸리티 (Command line arguments utilities)
 
 	private resolveArgs(): NativeParsedArgs {
 

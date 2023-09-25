@@ -1,6 +1,13 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ *        function escapeNewLine
+ * export class    TextChange
+ * export function compressConsecutiveTextChanges
+ *        class    TextChangeCompressor
  *--------------------------------------------------------------------------------------------*/
 
 import * as buffer from 'vs/base/common/buffer';
@@ -15,23 +22,24 @@ function escapeNewLine(str: string): string {
 }
 
 export class TextChange {
-
+	/** 삭제하는 문자열의 길이 반환 */
 	public get oldLength(): number {
 		return this.oldText.length;
 	}
-
+	/** 삭제하는 문자열의 끝 위치 반환 */
 	public get oldEnd(): number {
 		return this.oldPosition + this.oldText.length;
 	}
-
+	/** 삽입하는 문자열의 길이 반환 */
 	public get newLength(): number {
 		return this.newText.length;
 	}
-
+	/** 삽입하는 문자열의 끝 위치 반환 */
 	public get newEnd(): number {
 		return this.newPosition + this.newText.length;
 	}
 
+	// 생성자
 	constructor(
 		public readonly oldPosition: number,
 		public readonly oldText: string,
@@ -39,6 +47,11 @@ export class TextChange {
 		public readonly newText: string
 	) { }
 
+	/** 아래 형태 중 하나로 반환
+	 * - `(insert@삽입위치 "삽입하는 문자열")`
+	 * - `(delete@삽입위치 "삭제하는 문자열")`
+	 * - `(replace@삽입위치 "삭제하는 문자열" with "삽입하는 문자열")`
+	 */
 	public toString(): string {
 		if (this.oldText.length === 0) {
 			return `(insert@${this.oldPosition} "${escapeNewLine(this.newText)}")`;
@@ -49,6 +62,7 @@ export class TextChange {
 		return `(replace@${this.oldPosition} "${escapeNewLine(this.oldText)}" with "${escapeNewLine(this.newText)}")`;
 	}
 
+	// 쓰는 문자열 길이
 	private static _writeStringSize(str: string): number {
 		return (
 			4 + 2 * str.length
@@ -61,7 +75,7 @@ export class TextChange {
 		for (let i = 0; i < len; i++) {
 			buffer.writeUInt16LE(b, str.charCodeAt(i), offset); offset += 2;
 		}
-		return offset;
+		return offset; // 쓰기가 끝난 위치 반환
 	}
 
 	private static _readString(b: Uint8Array, offset: number): string {
@@ -96,6 +110,8 @@ export class TextChange {
 	}
 }
 
+
+/** 연속적인 텍스트 변경 압축하기 */
 export function compressConsecutiveTextChanges(prevEdits: TextChange[] | null, currEdits: TextChange[]): TextChange[] {
 	if (prevEdits === null || prevEdits.length === 0) {
 		return currEdits;
@@ -104,6 +120,7 @@ export function compressConsecutiveTextChanges(prevEdits: TextChange[] | null, c
 	return compressor.compress();
 }
 
+/** 텍스트 변경 압축기 */
 class TextChangeCompressor {
 
 	private _prevEdits: TextChange[];
@@ -118,6 +135,7 @@ class TextChangeCompressor {
 	private _currLen: number;
 	private _currDeltaOffset: number;
 
+	// 생성자
 	constructor(prevEdits: TextChange[], currEdits: TextChange[]) {
 		this._prevEdits = prevEdits;
 		this._currEdits = currEdits;
@@ -132,6 +150,7 @@ class TextChangeCompressor {
 		this._currDeltaOffset = 0;
 	}
 
+	/** 텍스트 변경 압축하기 */
 	public compress(): TextChange[] {
 		let prevIndex = 0;
 		let currIndex = 0;

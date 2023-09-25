@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-/* Suggest widget*/
+/* 자동완성 위젯 (Suggest widget) */
 
 .monaco-editor .suggest-widget {
 	width: 430px;

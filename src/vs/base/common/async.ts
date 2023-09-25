@@ -789,6 +789,7 @@ export class ResourceQueue implements IDisposable {
 	}
 }
 
+/** 타임아웃 타이머 */
 export class TimeoutTimer implements IDisposable {
 	private _token: any;
 
@@ -802,10 +803,12 @@ export class TimeoutTimer implements IDisposable {
 		}
 	}
 
+	/** 타이머 취소하기 */
 	dispose(): void {
 		this.cancel();
 	}
 
+	/** 타이머 취소하기 */
 	cancel(): void {
 		if (this._token !== -1) {
 			clearTimeout(this._token);
@@ -813,6 +816,10 @@ export class TimeoutTimer implements IDisposable {
 		}
 	}
 
+	/**
+	 * 기존 타이머 취소하고 새로운 타이머 시작하기
+	 * - `timeout` 시간 지나면 `runner` 실행
+	 */
 	cancelAndSet(runner: () => void, timeout: number): void {
 		this.cancel();
 		this._token = setTimeout(() => {
@@ -821,6 +828,10 @@ export class TimeoutTimer implements IDisposable {
 		}, timeout);
 	}
 
+	/**
+	 * 기존에 타이머 시작한게 없으면 새로운 타이머 시작하기
+	 * - `timeout` 시간 지나면 `runner` 실행
+	 */
 	setIfNotSet(runner: () => void, timeout: number): void {
 		if (this._token !== -1) {
 			// timer is already set
@@ -833,6 +844,7 @@ export class TimeoutTimer implements IDisposable {
 	}
 }
 
+/** 인터벌 타이머 */
 export class IntervalTimer implements IDisposable {
 
 	private _token: any;
@@ -841,10 +853,12 @@ export class IntervalTimer implements IDisposable {
 		this._token = -1;
 	}
 
+	/** 타이머 취소하기 */
 	dispose(): void {
 		this.cancel();
 	}
 
+	/** 타이머 취소하기 */
 	cancel(): void {
 		if (this._token !== -1) {
 			clearInterval(this._token);
@@ -852,6 +866,7 @@ export class IntervalTimer implements IDisposable {
 		}
 	}
 
+	/** 기존 타이머 취소하고 새로운 타이머 시작하기 */
 	cancelAndSet(runner: () => void, interval: number): void {
 		this.cancel();
 		this._token = setInterval(() => {

@@ -208,7 +208,7 @@ export const enum ScrollType {
 }
 
 /**
- * An editor.
+ * 에디터 (an editor)
  */
 export interface IEditor {
 	/**

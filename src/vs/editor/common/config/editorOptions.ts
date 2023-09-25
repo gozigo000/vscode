@@ -1393,7 +1393,7 @@ class EditorComments extends BaseEditorOption<EditorOption.comments, IEditorComm
 
 //#endregion
 
-//#region cursorBlinking
+//#region 커서 깜빡임
 
 /**
  * The kind of animation in which the editor's cursor should be rendered.
@@ -1437,7 +1437,7 @@ function _cursorBlinkingStyleFromString(cursorBlinkingStyle: 'blink' | 'smooth' 
 
 //#endregion
 
-//#region cursorStyle
+//#region 커서 스타일
 
 /**
  * The style in which the editor's cursor should be rendered.
@@ -3260,17 +3260,27 @@ export type QuickSuggestionsValue = 'on' | 'inline' | 'off';
 
 /**
  * Configuration options for quick suggestions
+ *
+ * -`other` = 'on' | 'inline' | 'off' \
+ * -`comments` = 'on' | 'inline' | 'off' \
+ * -`strings` = 'on' | 'inline' | 'off'
  */
 export interface IQuickSuggestionsOptions {
-	other?: boolean | QuickSuggestionsValue;
-	comments?: boolean | QuickSuggestionsValue;
-	strings?: boolean | QuickSuggestionsValue;
+	other?: boolean | QuickSuggestionsValue; // Enable quick suggestions outside of strings and comments.
+	comments?: boolean | QuickSuggestionsValue; // Enable quick suggestions inside comments.
+	strings?: boolean | QuickSuggestionsValue; // Enable quick suggestions inside strings.
 }
-
+/**
+ * Configuration options for quick suggestions
+ *
+ * -`other` = 'on' | 'inline' | 'off' \
+ * -`comments` = 'on' | 'inline' | 'off' \
+ * -`strings` = 'on' | 'inline' | 'off'
+ */
 export interface InternalQuickSuggestionsOptions {
-	readonly other: QuickSuggestionsValue;
-	readonly comments: QuickSuggestionsValue;
-	readonly strings: QuickSuggestionsValue;
+	readonly other: QuickSuggestionsValue; // Enable quick suggestions outside of strings and comments.
+	readonly comments: QuickSuggestionsValue; // Enable quick suggestions inside comments.
+	readonly strings: QuickSuggestionsValue; // Enable quick suggestions inside strings.
 }
 
 class EditorQuickSuggestions extends BaseEditorOption<EditorOption.quickSuggestions, boolean | IQuickSuggestionsOptions, InternalQuickSuggestionsOptions> {
@@ -5327,7 +5337,7 @@ export const EditorOptions = {
 		EditorOption.contextmenu, 'contextmenu', true,
 	)),
 	copyWithSyntaxHighlighting: register(new EditorBooleanOption(
-		EditorOption.copyWithSyntaxHighlighting, 'copyWithSyntaxHighlighting', true,
+		EditorOption.copyWithSyntaxHighlighting, 'copyWithSyntaxHighlighting', true, // 메모: false로 바꾸면 스타일은 복사 안되고 글자만 복사됨
 		{ description: nls.localize('copyWithSyntaxHighlighting', "Controls whether syntax highlighting should be copied into the clipboard.") }
 	)),
 	cursorBlinking: register(new EditorEnumOption(

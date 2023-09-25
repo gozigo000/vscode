@@ -548,6 +548,10 @@ export interface CompletionList {
 
 /**
  * How a suggest provider was triggered.
+ *
+ * -`Invoke` = 0, \
+ * -`TriggerCharacter` = 1, \
+ * -`TriggerForIncompleteCompletions` = 2
  */
 export const enum CompletionTriggerKind {
 	Invoke = 0,

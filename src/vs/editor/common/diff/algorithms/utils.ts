@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/** 2차원 배열 */
 export class Array2D<T> {
 	private readonly array: T[] = [];
 

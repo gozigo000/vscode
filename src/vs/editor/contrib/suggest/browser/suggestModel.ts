@@ -3,6 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// * [개요] export
+// * export interface ICancelEvent
+// * export interface ITriggerEvent
+// * export interface ISuggestEvent
+// * export interface SuggestTriggerOptions
+// * export class LineContext
+// * export const enum State
+// [*]export class `SuggestModel` implements IDisposable
+
 import { TimeoutTimer } from 'vs/base/common/async';
 import { CancellationTokenSource } from 'vs/base/common/cancellation';
 import { onUnexpectedError } from 'vs/base/common/errors';
@@ -79,6 +88,7 @@ export class LineContext {
 			return false;
 		}
 		if (!isNaN(Number(word.word))) {
+			// 그냥 숫자만 있으면 제안 끄기?
 			return false;
 		}
 		return true;
@@ -91,14 +101,15 @@ export class LineContext {
 	readonly triggerOptions: SuggestTriggerOptions;
 
 	constructor(model: ITextModel, position: Position, triggerOptions: SuggestTriggerOptions) {
-		this.leadingLineContent = model.getLineContent(position.lineNumber).substr(0, position.column - 1);
-		this.leadingWord = model.getWordUntilPosition(position);
 		this.lineNumber = position.lineNumber;
 		this.column = position.column;
+		this.leadingLineContent = model.getLineContent(position.lineNumber).substr(0, position.column - 1);
+		this.leadingWord = model.getWordUntilPosition(position);
 		this.triggerOptions = triggerOptions;
 	}
 }
 
+/** `Idle` = 0, `Manual` = 1, `Auto` = 2 */
 export const enum State {
 	Idle = 0,
 	Manual = 1,
@@ -165,40 +176,33 @@ export class SuggestModel implements IDisposable {
 
 		// wire up various listeners
 		this._toDispose.add(this._editor.onDidChangeModel(() => {
+			// console.log('이벤트: onDidChangeModel')
 			this._updateTriggerCharacters();
 			this.cancel();
 		}));
 		this._toDispose.add(this._editor.onDidChangeModelLanguage(() => {
+			// console.log('이벤트: onDidChangeModelLanguage')
 			this._updateTriggerCharacters();
 			this.cancel();
 		}));
 		this._toDispose.add(this._editor.onDidChangeConfiguration(() => {
+			// console.log('이벤트: onDidChangeConfiguration')
 			this._updateTriggerCharacters();
 		}));
 		this._toDispose.add(this._languageFeaturesService.completionProvider.onDidChange(() => {
+			// console.log('이벤트: onDidChange')
 			this._updateTriggerCharacters();
 			this._updateActiveSuggestSession();
 		}));
 
-		let editorIsComposing = false;
-		this._toDispose.add(this._editor.onDidCompositionStart(() => {
-			editorIsComposing = true;
-		}));
-		this._toDispose.add(this._editor.onDidCompositionEnd(() => {
-			editorIsComposing = false;
-			this._onCompositionEnd();
-		}));
 		this._toDispose.add(this._editor.onDidChangeCursorSelection(e => {
-			// only trigger suggest when the editor isn't composing a character
-			if (!editorIsComposing) {
-				this._onCursorChange(e);
-			}
+			// console.log('이벤트: onDidChangeCursorSelection - 커서 위치 이동 (순서:4)')
+			this._onCursorChange(e);
 		}));
 		this._toDispose.add(this._editor.onDidChangeModelContent(() => {
-			// only filter completions when the editor isn't composing a character
-			// allow-any-unicode-next-line
-			// e.g. ¨ + u makes ü but just ¨ cannot be used for filtering
-			if (!editorIsComposing && this._triggerState !== undefined) {
+			// console.log('이벤트: onDidChangeModelContent ---- 문서 내용 변경 (순서:3)')
+			// allow-any-unicode-next-line (e.g. ¨ + u makes ü but just ¨ cannot be used for filtering)
+			if (this._triggerState !== undefined) {
 				this._refilterCompletionItems();
 			}
 		}));
@@ -294,8 +298,9 @@ export class SuggestModel implements IDisposable {
 		this._triggerCharacterListener.add(this._editor.onDidCompositionEnd(() => checkTriggerCharacter()));
 	}
 
-	// --- trigger/retrigger/cancel suggest
+	// --- 제안 trigger/retrigger/cancel
 
+	/** triggerState 반환 */
 	get state(): State {
 		if (!this._triggerState) {
 			return State.Idle;
@@ -306,6 +311,7 @@ export class SuggestModel implements IDisposable {
 		}
 	}
 
+	/** 제안 취소하기 */
 	cancel(retrigger: boolean = false): void {
 		if (this._triggerState !== undefined) {
 			this._triggerQuickSuggest.cancel();
@@ -333,7 +339,7 @@ export class SuggestModel implements IDisposable {
 	}
 
 	private _onCursorChange(e: ICursorSelectionChangedEvent): void {
-
+		// console.log('_onCursorChange(e) 호출')
 		if (!this._editor.hasModel()) {
 			return;
 		}
@@ -341,9 +347,9 @@ export class SuggestModel implements IDisposable {
 		const prevSelection = this._currentSelection;
 		this._currentSelection = this._editor.getSelection();
 
-		if (!e.selection.isEmpty()
-			|| (e.reason !== CursorChangeReason.NotSet && e.reason !== CursorChangeReason.Explicit)
-			|| (e.source !== 'keyboard' && e.source !== 'deleteLeft')
+		if (!e.selection.isEmpty() // 선택범위가 있거나,
+			|| (e.reason !== CursorChangeReason.NotSet && e.reason !== CursorChangeReason.Explicit) // NotSet 또는 Explicit이 아니거나,
+			|| (e.source !== 'keyboard' && e.source !== 'deleteLeft') // keyboard 또는 deleteLeft가 아니면, 나가기
 		) {
 			// Early exit if nothing needs to be done!
 			// Leave some form of early exit check here if you wish to continue being a cursor position change listener ;)
@@ -351,43 +357,40 @@ export class SuggestModel implements IDisposable {
 			return;
 		}
 
-
 		if (this._triggerState === undefined && e.reason === CursorChangeReason.NotSet) {
-			if (prevSelection.containsRange(this._currentSelection) || prevSelection.getEndPosition().isBeforeOrEqual(this._currentSelection.getPosition())) {
-				// cursor did move RIGHT due to typing -> trigger quick suggest
+			// 제안이 트리거된 적 없고, NotSet인 경우
+			if (prevSelection.containsRange(this._currentSelection)
+				|| prevSelection.getEndPosition().isBeforeOrEqual(this._currentSelection.getPosition())
+			) {
+				// 커서는 타이핑 때문에 `오른쪽`으로 이동한 것 -> 빠른 제안 트리거!
+				// console.log('_onCursorChange(e) - 타이핑으로 커서 오른쪽으로 이동 -> 빠른 제안 트리거!')
 				this._doTriggerQuickSuggest();
 			}
-
 		} else if (this._triggerState !== undefined && e.reason === CursorChangeReason.Explicit) {
-			// suggest is active and something like cursor keys are used to move
-			// the cursor. this means we can refilter at the new position
+			// 제안이 켜져 있고, 방향키 등으로 커서를 움직인 경우
+			// (my. 백스페이스키 늘러서 커서가 이동한 경우는 포함되지 않음)
+			// 현재 위치에서 리필터링하기
+			// console.log('_onCursorChange(e) - 제안이 활성화 중이고 방향키 등으로 커서 이동 -> 리필터')
 			this._refilterCompletionItems();
 		}
 	}
 
-	private _onCompositionEnd(): void {
-		// trigger or refilter when composition ends
-		if (this._triggerState === undefined) {
-			this._doTriggerQuickSuggest();
-		} else {
-			this._refilterCompletionItems();
-		}
-	}
-
+	/** 빠른 제안 트리거 준비 */
 	private _doTriggerQuickSuggest(): void {
-
+		// console.log('_doTriggerQuickSuggest() 호출')
 		if (QuickSuggestionsOptions.isAllOff(this._editor.getOption(EditorOption.quickSuggestions))) {
-			// not enabled
+			// 빠른 제안 설정이 모두 꺼진 상태
 			return;
 		}
 
 		if (this._editor.getOption(EditorOption.suggest).snippetsPreventQuickSuggestions && SnippetController2.get(this._editor)?.isInSnippet()) {
-			// no quick suggestion when in snippet mode
+			// 스니펫 모드에서는 빠른 제안 안하기
 			return;
 		}
 
 		this.cancel();
 
+		// quickSuggestionsDelay 옵션에서 지정한 시간이 지나면 빠른 제안 트리거
 		this._triggerQuickSuggest.cancelAndSet(() => {
 			if (this._triggerState !== undefined) {
 				return;
@@ -398,6 +401,7 @@ export class SuggestModel implements IDisposable {
 			if (!this._editor.hasModel() || !this._editor.hasWidgetFocus()) {
 				return;
 			}
+
 			const model = this._editor.getModel();
 			const pos = this._editor.getPosition();
 			// validate enabled now
@@ -417,7 +421,7 @@ export class SuggestModel implements IDisposable {
 			}
 
 			if (!canShowQuickSuggest(this._editor, this._contextKeyService, this._configurationService)) {
-				// do not trigger quick suggestions if inline suggestions are shown
+				// 인라인 제안(inline suggestion)이 보여지는 경우에는 빠른 제안 트리거 안하기
 				return;
 			}
 
@@ -441,7 +445,9 @@ export class SuggestModel implements IDisposable {
 		this._onNewContext(ctx);
 	}
 
+	/** 제안 트리거하기 */
 	trigger(options: SuggestTriggerOptions): void {
+		// console.log('trigger({...}) 호출')
 		if (!this._editor.hasModel()) {
 			return;
 		}
@@ -454,7 +460,7 @@ export class SuggestModel implements IDisposable {
 		this._triggerState = options;
 		this._onDidTrigger.fire({ auto: options.auto, shy: options.shy ?? false, position: this._editor.getPosition() });
 
-		// Capture context when request was sent
+		// Capture line context when request was sent
 		this._context = ctx;
 
 		// Build context for request
@@ -485,9 +491,17 @@ export class SuggestModel implements IDisposable {
 		}
 
 		const { itemKind: itemKindFilter, showDeprecated } = SuggestModel._createSuggestFilter(this._editor);
-		const completionOptions = new CompletionOptions(snippetSortOrder, options.completionOptions?.kindFilter ?? itemKindFilter, options.completionOptions?.providerFilter, options.completionOptions?.providerItemsToReuse, showDeprecated);
+		const completionOptions = new CompletionOptions(
+			snippetSortOrder,
+			options.completionOptions?.kindFilter ?? itemKindFilter,
+			options.completionOptions?.providerFilter,
+			options.completionOptions?.providerItemsToReuse,
+			showDeprecated
+		);
 		const wordDistance = WordDistance.create(this._editorWorkerService, this._editor);
 
+		// 여기서 문서 내에 있는 단어들을 분리해냄.
+		// completions.items 배열에 문서 내 단어들이 저장
 		const completions = provideSuggestionItems(
 			this._languageFeaturesService.completionProvider,
 			model,
@@ -515,22 +529,18 @@ export class SuggestModel implements IDisposable {
 			}
 
 			const model = this._editor.getModel();
-			// const items = completions.items;
-
-			// if (existing) {
-			// 	const cmpFn = getSuggestionComparator(snippetSortOrder);
-			// 	items = items.concat(existing.items).sort(cmpFn);
-			// }
-
 			const ctx = new LineContext(model, this._editor.getPosition(), options);
 			const fuzzySearchOptions = {
 				...FuzzyScoreOptions.default,
 				firstMatchCanBeWeak: !this._editor.getOption(EditorOption.suggest).matchOnWordStartOnly
 			};
-			this._completionModel = new CompletionModel(completions.items, this._context!.column, {
-				leadingLineContent: ctx.leadingLineContent,
-				characterCountDelta: ctx.column - this._context!.column
-			},
+			this._completionModel = new CompletionModel(
+				completions.items,
+				this._context!.column,
+				{
+					leadingLineContent: ctx.leadingLineContent,
+					characterCountDelta: ctx.column - this._context!.column
+				},
 				wordDistance,
 				this._editor.getOption(EditorOption.suggest),
 				this._editor.getOption(EditorOption.snippetSuggestions),
@@ -541,6 +551,7 @@ export class SuggestModel implements IDisposable {
 			// store containers so that they can be disposed later
 			this._completionDisposables.add(completions.disposable);
 
+			// 여기서 추천 단어 목룍 만듦
 			this._onNewContext(ctx);
 
 			// finally report telemetry about durations
@@ -578,15 +589,17 @@ export class SuggestModel implements IDisposable {
 		});
 	}
 
+	/**
+	 * 제안 리스트에 보여줄 아이템 종류 세트 만들기 \
+	 * (ex. 변수, 함수, 메서드, ...)
+	*/
 	private static _createSuggestFilter(editor: ICodeEditor): { itemKind: Set<CompletionItemKind>; showDeprecated: boolean } {
 		// kind filter and snippet sort rules
 		const result = new Set<CompletionItemKind>();
 
 		// snippet setting
 		const snippetSuggestions = editor.getOption(EditorOption.snippetSuggestions);
-		if (snippetSuggestions === 'none') {
-			result.add(CompletionItemKind.Snippet);
-		}
+		if (snippetSuggestions === 'none') { result.add(CompletionItemKind.Snippet); }
 
 		// type setting
 		const suggestOptions = editor.getOption(EditorOption.suggest);
@@ -622,6 +635,7 @@ export class SuggestModel implements IDisposable {
 		return { itemKind: result, showDeprecated: suggestOptions.showDeprecated };
 	}
 
+	/** 현재 줄에 있는 내용이 변경된 경우  */
 	private _onNewContext(ctx: LineContext): void {
 
 		if (!this._context) {
@@ -636,14 +650,13 @@ export class SuggestModel implements IDisposable {
 		}
 
 		if (getLeadingWhitespace(ctx.leadingLineContent) !== getLeadingWhitespace(this._context.leadingLineContent)) {
-			// cancel IntelliSense when line start changes
-			// happens when the current word gets outdented
+			// cancel IntelliSense when line start changes. happens when the current word gets outdented
 			this.cancel();
 			return;
 		}
 
 		if (ctx.column < this._context.column) {
-			// typed -> moved cursor LEFT -> retrigger if still on a word
+			// 타이핑 -> 커서가 `왼쪽`으로 이동 -> 여전히 단어 위에 있으면 다시 트리거
 			if (ctx.leadingWord.word) {
 				this.trigger({ auto: this._context.triggerOptions.auto, retrigger: true });
 			} else {
@@ -658,11 +671,11 @@ export class SuggestModel implements IDisposable {
 		}
 
 		if (ctx.leadingWord.word.length !== 0 && ctx.leadingWord.startColumn > this._context.leadingWord.startColumn) {
-			// started a new word while IntelliSense shows -> retrigger but reuse all items that we currently have
+			// 인텔리센스가 보이는 중에 새로운 단어를 시작했음 -> 다시 트리거하기 (현재 가지고 있는 아이템s 재사용)
 			const shouldAutoTrigger = LineContext.shouldAutoTrigger(this._editor);
 			if (shouldAutoTrigger && this._context) {
-				// shouldAutoTrigger forces tokenization, which can cause pending cursor change events to be emitted, which can cause
-				// suggestions to be cancelled, which causes `this._context` to be undefined
+				// shouldAutoTrigger forces tokenization, which can cause pending cursor change events to be emitted,
+				// which can cause suggestions to be cancelled, which causes `this._context` to be undefined
 				const map = this._completionModel.getItemsByProvider();
 				this.trigger({
 					auto: this._context.triggerOptions.auto,
@@ -674,8 +687,11 @@ export class SuggestModel implements IDisposable {
 			return;
 		}
 
-		if (ctx.column > this._context.column && this._completionModel.getIncompleteProvider().size > 0 && ctx.leadingWord.word.length !== 0) {
-			// typed -> moved cursor RIGHT & incomple model & still on a word -> retrigger
+		if (ctx.column > this._context.column
+			&& this._completionModel.getIncompleteProvider().size > 0
+			&& ctx.leadingWord.word.length !== 0
+		) {
+			// 타이핑 -> 커서가 `오른쪽`으로 이동 & incomple model & 여전히 단어 위에 있음 -> 다시 트리거
 
 			const providerItemsToReuse = new Map<CompletionItemProvider, CompletionItem[]>();
 			const providerFilter = new Set<CompletionItemProvider>();
@@ -696,7 +712,7 @@ export class SuggestModel implements IDisposable {
 			});
 
 		} else {
-			// typed -> moved cursor RIGHT -> update UI
+			// 타이핑 -> 커서가 `오른쪽`으로 이동 -> update UI
 			const oldLineContext = this._completionModel.lineContext;
 			let isFrozen = false;
 
@@ -705,26 +721,31 @@ export class SuggestModel implements IDisposable {
 				characterCountDelta: ctx.column - this._context.column
 			};
 
+			// console.log('_onNewContext - 비슷한 단어 리스트 만들기')
+			// ** this._completionModel.items 호출하면 제안 리스트 만드는 곳으로 이동 **
 			if (this._completionModel.items.length === 0) {
 
 				const shouldAutoTrigger = LineContext.shouldAutoTrigger(this._editor);
 				if (!this._context) {
-					// shouldAutoTrigger forces tokenization, which can cause pending cursor change events to be emitted, which can cause
-					// suggestions to be cancelled, which causes `this._context` to be undefined
+					// shouldAutoTrigger forces tokenization, which can cause pending cursor change events to be emitted,
+					// which can cause suggestions to be cancelled, which causes `this._context` to be undefined
 					this.cancel();
 					return;
 				}
 
 				if (shouldAutoTrigger && this._context.leadingWord.endColumn < ctx.leadingWord.startColumn) {
 					// retrigger when heading into a new word
-					this.trigger({ auto: this._context.triggerOptions.auto, retrigger: true });
+					this.trigger({
+						auto: this._context.triggerOptions.auto,
+						retrigger: true
+					});
 					return;
 				}
 
 				if (!this._context.triggerOptions.auto) {
 					// freeze when IntelliSense was manually requested
 					this._completionModel.lineContext = oldLineContext;
-					isFrozen = this._completionModel.items.length > 0;
+					isFrozen = (this._completionModel.items.length > 0);
 
 					if (isFrozen && ctx.leadingWord.word.length === 0) {
 						// there were results before but now there aren't

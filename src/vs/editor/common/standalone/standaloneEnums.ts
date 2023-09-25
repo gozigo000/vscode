@@ -70,6 +70,10 @@ export enum CompletionItemTag {
 
 /**
  * How a suggest provider was triggered.
+ *
+ * -`Invoke` = 0, \
+ * -`TriggerCharacter` = 1, \
+ * -`TriggerForIncompleteCompletions` = 2
  */
 export enum CompletionTriggerKind {
 	Invoke = 0,
@@ -96,7 +100,7 @@ export enum ContentWidgetPositionPreference {
 }
 
 /**
- * Describes the reason the cursor has changed its position.
+ * 커서가 위치를 바꾼 이유s
  */
 export enum CursorChangeReason {
 	/**
@@ -104,7 +108,7 @@ export enum CursorChangeReason {
 	 */
 	NotSet = 0,
 	/**
-	 * A `model.setValue()` was called.
+	 * `model.setValue()`가 호출되었음
 	 */
 	ContentFlush = 1,
 	/**
@@ -116,21 +120,23 @@ export enum CursorChangeReason {
 	 */
 	Explicit = 3,
 	/**
-	 * There was a Paste.
+	 * 붙여넣기(Paste) 했음
 	 */
 	Paste = 4,
 	/**
-	 * There was an Undo.
+	 * 뒤로 가기(Undo) 했음
 	 */
 	Undo = 5,
 	/**
-	 * There was a Redo.
+	 * 앞으로 가기(Redo) 했음
 	 */
 	Redo = 6
 }
 
 /**
  * The default end of line to use when instantiating models.
+ *
+ * `LF` = 1, `CRLF` = 2
  */
 export enum DefaultEndOfLine {
 	/**
@@ -323,7 +329,9 @@ export enum EditorOption {
 }
 
 /**
- * End of line character preference.
+ * EOL character preference.
+ *
+ * `TextDefined` = 0, `LF` = 1, `CRLF` = 2
  */
 export enum EndOfLinePreference {
 	/**
@@ -342,6 +350,8 @@ export enum EndOfLinePreference {
 
 /**
  * End of line character preference.
+ *
+ * `LF` = 0, `CRLF` = 1
  */
 export enum EndOfLineSequence {
 	/**
@@ -356,6 +366,9 @@ export enum EndOfLineSequence {
 
 /**
  * Vertical Lane in the glyph margin of the editor.
+ *
+ * `Left` = 1, `Right` = 2
+ * - 참고: `glyph margin` - https://microchipdeveloper.com/mplabx:glyph-margin
  */
 export enum GlyphMarginLane {
 	Left = 1,
@@ -632,6 +645,9 @@ export enum MarkerTag {
 
 /**
  * Position in the minimap to render the decoration.
+ *
+ * `Inline` = 1, `Gutter` = 2
+ * - 참고: `Gutter` - https://support.smartbear.com/testcomplete/docs/scripting/code-editor/window/gutter.html
  */
 export enum MinimapPosition {
 	Inline = 1,
@@ -720,6 +736,9 @@ export enum OverlayWidgetPositionPreference {
 
 /**
  * Vertical Lane in the overview ruler of the editor.
+ *
+ * `Left` = 1, `Center` = 2, `Right` = 4, `Full` = 7
+ * - 참고: `overview ruler` - https://stackoverflow.com/questions/50593516/colored-pixels-in-scrollbar-in-vs-code/51684408#51684408
  */
 export enum OverviewRulerLane {
 	Left = 1,
@@ -777,15 +796,15 @@ export enum ScrollbarVisibility {
 }
 
 /**
- * The direction of a selection.
+ * 선택범위(selection)의 방향
  */
 export enum SelectionDirection {
 	/**
-	 * The selection starts above where it ends.
+	 * 위에서 아래로 선택함
 	 */
 	LTR = 0,
 	/**
-	 * The selection starts below where it ends.
+	 * 아래에서 위로 선택함
 	 */
 	RTL = 1
 }

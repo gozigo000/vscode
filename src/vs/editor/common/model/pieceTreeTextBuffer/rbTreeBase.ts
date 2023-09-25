@@ -1,6 +1,22 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * 레드-블랙 트리
+ *
+ * [개요] export
+ * export class TreeNode
+ * export const enum NodeColor
+ * export const SENTINEL: TreeNode
+ * export function leftest
+ * export function righttest
+ * export function leftRotate
+ * export function rightRotate
+ * export function rbDelete
+ * export function fixInsert
+ * export function updateTreeMetadata
+ * export function recomputeTreeMetadata
  *--------------------------------------------------------------------------------------------*/
 
 import { Piece, PieceTreeBase } from 'vs/editor/common/model/pieceTreeTextBuffer/pieceTreeBase';
@@ -13,8 +29,8 @@ export class TreeNode {
 
 	// Piece
 	piece: Piece;
-	size_left: number; // size of the left subtree (not inorder)
-	lf_left: number; // line feeds cnt in the left subtree (not in order)
+	size_left: number; // 왼쪽 서브트리의 버퍼 길이 (not inorder)
+	lf_left: number; // 왼쪽 서브트리에서 줄바꿈 갯수 (not in order)
 
 	constructor(piece: Piece, color: NodeColor) {
 		this.piece = piece;
@@ -82,6 +98,15 @@ export const enum NodeColor {
 	Red = 1,
 }
 
+/**
+ * `root`노드와 `nil`노드에 사용
+ *
+ * A sentinel is used for root and for nil. These sentinels are created when RedBlackTreeCreate is called.
+ * root->left should always point to the node which is the root of the tree.
+ * nil points to a node which should always be black but has aribtrary children and parent and no key or info.
+ * The point of using these sentinels is so that the root and nil nodes do not require special cases in the code.
+ * @출처: https://stackoverflow.com/questions/25068106/red-black-tree-insert-implementation-what-is-a-sentinel
+ */
 export const SENTINEL: TreeNode = new TreeNode(null!, NodeColor.Black);
 SENTINEL.parent = SENTINEL;
 SENTINEL.left = SENTINEL;

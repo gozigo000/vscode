@@ -1,6 +1,15 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요] export
+ * export class SearchParams
+ * export function isMultilineRegexSource
+ * export function createFindMatch
+ * export class TextModelSearch
+ * export function isValidMatch
+ * export class Searcher
  *--------------------------------------------------------------------------------------------*/
 
 import { CharCode } from 'vs/base/common/charCode';

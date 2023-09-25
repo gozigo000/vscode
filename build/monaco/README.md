@@ -12,7 +12,7 @@
 
 * Be sure to have all changes committed **and pushed to the remote**
 * (the generated files contain the HEAD sha and that should be available on the remote)
-* run gulp editor-distro
+* `run gulp editor-distro`
 
 ## Publish
 

@@ -3,6 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [개요] export
+ * export function isFalsyOrWhitespace
+ * export function format
+ * export function format2
+ * export function escape
+ * export function escapeRegExpCharacters
+ * export function count
+ * ...
+ *
+ *
+ */
+
 import { LRUCachedFunction } from 'vs/base/common/cache';
 import { CharCode } from 'vs/base/common/charCode';
 import { Lazy } from 'vs/base/common/lazy';
@@ -223,7 +236,7 @@ export function splitLines(str: string): string[] {
 
 /**
  * Returns first index of the string that is not whitespace.
- * If string is empty or contains only whitespaces, returns -1
+ * - If string is `empty` or contains `only whitespaces`, returns -1
  */
 export function firstNonWhitespaceIndex(str: string): number {
 	for (let i = 0, len = str.length; i < len; i++) {
@@ -236,8 +249,8 @@ export function firstNonWhitespaceIndex(str: string): number {
 }
 
 /**
- * Returns the leading whitespace of the string.
- * If the string contains only whitespaces, returns entire string
+ * Returns the leading whitespace of the string. \
+ * 해당 줄에 공백 문자만 있으면 전체 문자열을 반환함
  */
 export function getLeadingWhitespace(str: string, start: number = 0, end: number = str.length): string {
 	for (let i = start; i < end; i++) {
@@ -607,7 +620,8 @@ function makeContainsRtl() {
 }
 
 /**
- * Returns true if `str` contains any Unicode character that is classified as "R" or "AL".
+ * ToDo: RTL 관련 코드 지우기 \
+ * Returns true if `str` contains any Unicode character that is classified as "R(=RTL)" or "AL(아라비아 문자)".
  */
 export function containsRTL(str: string): boolean {
 	if (!CONTAINS_RTL) {
@@ -619,7 +633,7 @@ export function containsRTL(str: string): boolean {
 
 const IS_BASIC_ASCII = /^[\t\n\r\x20-\x7E]*$/;
 /**
- * Returns true if `str` contains only basic ASCII characters in the range 32 - 126 (including 32 and 126) or \n, \r, \t
+ * `str`이 알파벳, 숫자, 특수문자 (아스키코드[32 - 126]) 및 `\n`, `\r`, `\t`으로만 이루어졌으면 `true` 반환
  */
 export function isBasicASCII(str: string): boolean {
 	return IS_BASIC_ASCII.test(str);

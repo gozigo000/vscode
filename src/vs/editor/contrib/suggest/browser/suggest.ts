@@ -448,13 +448,25 @@ export interface ISuggestItemPreselector {
 	select(model: ITextModel, pos: IPosition, items: CompletionItem[]): number | -1;
 }
 
-
+/**
+ * InternalQuickSuggestionsOptions 관련 메서드
+ *
+ * -`isAllOff()` \
+ * -`isAllOn()` \
+ * -`valueFor()`
+ */
 export abstract class QuickSuggestionsOptions {
-
+	/**
+	 * 제안 옵션 체크 \
+	 * `other === 'off' && comments === 'off' && strings === 'off'`
+	 */
 	static isAllOff(config: InternalQuickSuggestionsOptions): boolean {
 		return config.other === 'off' && config.comments === 'off' && config.strings === 'off';
 	}
-
+	/**
+	 * 제안 옵션 체크 \
+	 * `other === 'on' && comments === 'on' && strings === 'on'`
+	 */
 	static isAllOn(config: InternalQuickSuggestionsOptions): boolean {
 		return config.other === 'on' && config.comments === 'on' && config.strings === 'on';
 	}

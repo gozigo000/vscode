@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export interface ISingleEditOperation
+ * export class EditOperation
  *--------------------------------------------------------------------------------------------*/
 
 import { Position } from 'vs/editor/common/core/position';
@@ -28,6 +33,7 @@ export interface ISingleEditOperation {
 
 export class EditOperation {
 
+	/** `position` 위치에 `text` 삽입 */
 	public static insert(position: Position, text: string): ISingleEditOperation {
 		return {
 			range: new Range(position.lineNumber, position.column, position.lineNumber, position.column),
@@ -36,6 +42,7 @@ export class EditOperation {
 		};
 	}
 
+	/** `range` 범위 삭제 */
 	public static delete(range: Range): ISingleEditOperation {
 		return {
 			range: range,
@@ -43,6 +50,7 @@ export class EditOperation {
 		};
 	}
 
+	/** `range` 범위를 `text`로 교체 */
 	public static replace(range: Range, text: string | null): ISingleEditOperation {
 		return {
 			range: range,
@@ -50,6 +58,7 @@ export class EditOperation {
 		};
 	}
 
+	/**  */
 	public static replaceMove(range: Range, text: string | null): ISingleEditOperation {
 		return {
 			range: range,

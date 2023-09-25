@@ -529,7 +529,7 @@ export interface IDiffEditorConstructionOptions extends IDiffEditorOptions, IEdi
 }
 
 /**
- * A rich code editor.
+ * 리치 코드 에디터 (A rich code editor)
  */
 export interface ICodeEditor extends editorCommon.IEditor {
 	/**
@@ -538,7 +538,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	readonly isSimpleWidget: boolean;
 	/**
-	 * An event emitted when the content of the current model has changed.
+	 * 이벤트 - 현재 모델의 컨텐츠가 바뀔 때마다 발생 (ex.글자 입력)
 	 * @event
 	 */
 	readonly onDidChangeModelContent: Event<IModelContentChangedEvent>;
@@ -568,7 +568,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	readonly onDidChangeCursorPosition: Event<ICursorPositionChangedEvent>;
 	/**
-	 * An event emitted when the cursor selection has changed.
+	 * 이벤트 - 커서 선택범위?(selection)가 바뀔 때마다 발생
 	 * @event
 	 */
 	readonly onDidChangeCursorSelection: Event<ICursorSelectionChangedEvent>;
@@ -620,11 +620,11 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	readonly onDidType: Event<string>;
 	/**
-	 * An event emitted after composition has started.
+	 * 이벤트 - 한글 조합을 시작할 때마다 발생
 	 */
 	readonly onDidCompositionStart: Event<void>;
 	/**
-	 * An event emitted after composition has ended.
+	 * 이벤트 - 한글 조합이 끝날 때마다 발생
 	 */
 	readonly onDidCompositionEnd: Event<void>;
 	/**

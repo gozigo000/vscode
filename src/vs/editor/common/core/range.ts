@@ -3,49 +3,58 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [개요]
+ * export interface IRange
+ * export class Range
+ */
+
 import { IPosition, Position } from 'vs/editor/common/core/position';
 
 /**
- * A range in the editor. This interface is suitable for serialization.
+ * 에디터에서 범위(range)
+ *
+ * This interface is suitable for serialization.
  */
 export interface IRange {
 	/**
-	 * Line number on which the range starts (starts at 1).
+	 * range가 시작하는 line 번호 (`1`부터 시작)
 	 */
 	readonly startLineNumber: number;
 	/**
-	 * Column on which the range starts in line `startLineNumber` (starts at 1).
+	 * range가 시작하는 line `startLineNumber`에서 Column 번호 (`1`부터 시작)
 	 */
 	readonly startColumn: number;
 	/**
-	 * Line number on which the range ends.
+	 * range가 끝나는 line 번호
 	 */
 	readonly endLineNumber: number;
 	/**
-	 * Column on which the range ends in line `endLineNumber`.
+	 * range가 끝나는 line `endLineNumber`에서 Column 번호
 	 */
 	readonly endColumn: number;
 }
 
 /**
- * A range in the editor. (startLineNumber,startColumn) is <= (endLineNumber,endColumn)
+ * 에디터에서 범위(range)
+ * - (start·Line·Number, start·Column) <= (end·Line·Number, end·Column)
  */
 export class Range {
 
 	/**
-	 * Line number on which the range starts (starts at 1).
+	 * range가 시작하는 line 번호 (`1`부터 시작)
 	 */
 	public readonly startLineNumber: number;
 	/**
-	 * Column on which the range starts in line `startLineNumber` (starts at 1).
+	 * range가 시작하는 line `startLineNumber`에서 Column 번호 (`1`부터 시작).
 	 */
 	public readonly startColumn: number;
 	/**
-	 * Line number on which the range ends.
+	 * range가 끝나는 line 번호
 	 */
 	public readonly endLineNumber: number;
 	/**
-	 * Column on which the range ends in line `endLineNumber`.
+	 * range가 끝나는 line `endLineNumber`에서 Column 번호
 	 */
 	public readonly endColumn: number;
 
@@ -64,28 +73,32 @@ export class Range {
 	}
 
 	/**
-	 * Test if this range is empty.
+	 * `range`가 0인지 체크
 	 */
 	public isEmpty(): boolean {
 		return Range.isEmpty(this);
 	}
 
 	/**
-	 * Test if `range` is empty.
+	 * `range`가 0인지 체크
 	 */
 	public static isEmpty(range: IRange): boolean {
 		return (range.startLineNumber === range.endLineNumber && range.startColumn === range.endColumn);
 	}
 
 	/**
-	 * Test if position is in this range. If the position is at the edges, will return true.
+	 * `position`이 range `this` 범위 안에 있는지 체크
+	 *
+	 * - `position`이 경계에 있으면 true 반환
 	 */
 	public containsPosition(position: IPosition): boolean {
 		return Range.containsPosition(this, position);
 	}
 
 	/**
-	 * Test if `position` is in `range`. If the position is at the edges, will return true.
+	 * `position`이 `range` 범위 안에 있는지 체크
+	 *
+	 * - `position`이 경계에 있으면 true 반환
 	 */
 	public static containsPosition(range: IRange, position: IPosition): boolean {
 		if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
@@ -101,7 +114,9 @@ export class Range {
 	}
 
 	/**
-	 * Test if `position` is in `range`. If the position is at the edges, will return false.
+	 * `position`이 `range` 범위 안에 있는지 체크
+	 *
+	 * - `position`이 경계에 있으면 false 반환
 	 * @internal
 	 */
 	public static strictContainsPosition(range: IRange, position: IPosition): boolean {
@@ -118,14 +133,18 @@ export class Range {
 	}
 
 	/**
-	 * Test if range is in this range. If the range is equal to this range, will return true.
+	 * `otherRange`가 `this` range 범위 안에 있는지 체크
+	 *
+	 * - 두 range가 동일하면 true 반환
 	 */
 	public containsRange(range: IRange): boolean {
 		return Range.containsRange(this, range);
 	}
 
 	/**
-	 * Test if `otherRange` is in `range`. If the ranges are equal, will return true.
+	 * `otherRange`가 `range` 범위 안에 있는지 체크
+	 *
+	 * - 두 range가 동일하면 true 반환
 	 */
 	public static containsRange(range: IRange, otherRange: IRange): boolean {
 		if (otherRange.startLineNumber < range.startLineNumber || otherRange.endLineNumber < range.startLineNumber) {
@@ -144,14 +163,19 @@ export class Range {
 	}
 
 	/**
-	 * Test if `range` is strictly in this range. `range` must start after and end before this range for the result to be true.
+	 * Test if `range` is strictly in this range.
+	 *
+	 * - `this` range가 `range`보다 먼저 시작하고, 나중에 끝나야만 true 반환.
 	 */
 	public strictContainsRange(range: IRange): boolean {
 		return Range.strictContainsRange(this, range);
 	}
 
 	/**
-	 * Test if `otherRange` is strictly in `range` (must start after, and end before). If the ranges are equal, will return false.
+	 * Test if `otherRange` is strictly in `range`
+	 *
+	 * - `this` range가 `range`보다 먼저 시작하고, 나중에 끝나야만 true 반환
+	 * - 두 range가 동일하면 false 반환
 	 */
 	public static strictContainsRange(range: IRange, otherRange: IRange): boolean {
 		if (otherRange.startLineNumber < range.startLineNumber || otherRange.endLineNumber < range.startLineNumber) {
@@ -170,16 +194,18 @@ export class Range {
 	}
 
 	/**
-	 * A reunion of the two ranges.
-	 * The smallest position will be used as the start point, and the largest one as the end point.
+	 * 두 `range` 결합하기
+	 *
+	 * - 가장 작은 position이 시작점이 되고, 가장 큰 position이 끝점이 됨
 	 */
 	public plusRange(range: IRange): Range {
 		return Range.plusRange(this, range);
 	}
 
 	/**
-	 * A reunion of the two ranges.
-	 * The smallest position will be used as the start point, and the largest one as the end point.
+	 * 두 `range` 결합하기
+	 *
+	 * - 가장 작은 position이 시작점이 되고, 가장 큰 position이 끝점이 됨
 	 */
 	public static plusRange(a: IRange, b: IRange): Range {
 		let startLineNumber: number;
@@ -213,14 +239,14 @@ export class Range {
 	}
 
 	/**
-	 * A intersection of the two ranges.
+	 * 두 range가 겹치는 범위 구하기
 	 */
 	public intersectRanges(range: IRange): Range | null {
 		return Range.intersectRanges(this, range);
 	}
 
 	/**
-	 * A intersection of the two ranges.
+	 * 두 range가 겹치는 범위 구하기
 	 */
 	public static intersectRanges(a: IRange, b: IRange): Range | null {
 		let resultStartLineNumber = a.startLineNumber;
@@ -246,25 +272,26 @@ export class Range {
 			resultEndColumn = Math.min(resultEndColumn, otherEndColumn);
 		}
 
-		// Check if selection is now empty
+		// 선택범위(selection)가 0인지 체크
 		if (resultStartLineNumber > resultEndLineNumber) {
 			return null;
 		}
 		if (resultStartLineNumber === resultEndLineNumber && resultStartColumn > resultEndColumn) {
 			return null;
 		}
+
 		return new Range(resultStartLineNumber, resultStartColumn, resultEndLineNumber, resultEndColumn);
 	}
 
 	/**
-	 * Test if this range equals other.
+	 * range `this`와 range `other`가 동일한지 체크
 	 */
 	public equalsRange(other: IRange | null | undefined): boolean {
 		return Range.equalsRange(this, other);
 	}
 
 	/**
-	 * Test if range `a` equals `b`.
+	 * range `a`와 range `b`가 동일한지 체크
 	 */
 	public static equalsRange(a: IRange | null | undefined, b: IRange | null | undefined): boolean {
 		if (!a && !b) {
@@ -281,97 +308,122 @@ export class Range {
 	}
 
 	/**
-	 * Return the end position (which will be after or equal to the start position)
+	 * 끝나는 위치(position) 반환
+	 *
+	 * (시작 위치보다 뒤에 있거나 같음)
 	 */
 	public getEndPosition(): Position {
 		return Range.getEndPosition(this);
 	}
 
 	/**
-	 * Return the end position (which will be after or equal to the start position)
+	 * 끝나는 위치(position) 반환
+	 *
+	 * (시작 위치보다 뒤에 있거나 같음)
 	 */
 	public static getEndPosition(range: IRange): Position {
 		return new Position(range.endLineNumber, range.endColumn);
 	}
 
 	/**
-	 * Return the start position (which will be before or equal to the end position)
+	 * 시작 위치(position) 반환
+	 *
+	 * (끝나는 위치보다 앞에 있거나 같음)
 	 */
 	public getStartPosition(): Position {
 		return Range.getStartPosition(this);
 	}
 
 	/**
-	 * Return the start position (which will be before or equal to the end position)
+	 * 시작 위치(position) 반환
+	 *
+	 * (끝나는 위치보다 앞에 있거나 같음)
 	 */
 	public static getStartPosition(range: IRange): Position {
 		return new Position(range.startLineNumber, range.startColumn);
 	}
 
 	/**
-	 * Transform to a user presentable string representation.
+	 * `"[line,column -> line,column]"` 형태의 문자열로 반환 (user presentable string)
 	 */
 	public toString(): string {
 		return '[' + this.startLineNumber + ',' + this.startColumn + ' -> ' + this.endLineNumber + ',' + this.endColumn + ']';
 	}
 
 	/**
-	 * Create a new range using this range's start position, and using endLineNumber and endColumn as the end position.
+	 * 새로운 Range 반환
+	 *
+	 * Create a new range using `this` range's start position, and using `endLineNumber` and `endColumn` as the end position.
 	 */
 	public setEndPosition(endLineNumber: number, endColumn: number): Range {
 		return new Range(this.startLineNumber, this.startColumn, endLineNumber, endColumn);
 	}
 
 	/**
-	 * Create a new range using this range's end position, and using startLineNumber and startColumn as the start position.
+	 * 새로운 Range 반환
+	 *
+	 * Create a new range using `this` range's end position, and using `startLineNumber` and `startColumn` as the start position.
 	 */
 	public setStartPosition(startLineNumber: number, startColumn: number): Range {
 		return new Range(startLineNumber, startColumn, this.endLineNumber, this.endColumn);
 	}
 
 	/**
-	 * Create a new empty range using this range's start position.
+	 * 새로운 Range 반환
+	 *
+	 * Create a new empty range using `this` range's start position.
 	 */
 	public collapseToStart(): Range {
 		return Range.collapseToStart(this);
 	}
 
 	/**
-	 * Create a new empty range using this range's start position.
+	 * 새로운 Range 반환
+	 *
+	 * Create a new empty range using `this` range's start position.
 	 */
 	public static collapseToStart(range: IRange): Range {
 		return new Range(range.startLineNumber, range.startColumn, range.startLineNumber, range.startColumn);
 	}
 
 	/**
-	 * Create a new empty range using this range's end position.
+	 * 새로운 Range 반환
+	 *
+	 * Create a new empty range using `this` range's end position.
 	 */
 	public collapseToEnd(): Range {
 		return Range.collapseToEnd(this);
 	}
 
 	/**
-	 * Create a new empty range using this range's end position.
+	 * 새로운 Range 반환
+	 *
+	 * Create a new empty range using `this` range's end position.
 	 */
 	public static collapseToEnd(range: IRange): Range {
 		return new Range(range.endLineNumber, range.endColumn, range.endLineNumber, range.endColumn);
 	}
 
 	/**
-	 * Moves the range by the given amount of lines.
+	 * 새로운 Range 반환
+	 *
+	 * Moves `this` range by the given amount of lines.
 	 */
 	public delta(lineCount: number): Range {
 		return new Range(this.startLineNumber + lineCount, this.startColumn, this.endLineNumber + lineCount, this.endColumn);
 	}
 
-	// ---
-
+	/**
+	 * 새로운 Range 반환
+	 *
+	 * 시작 위치가 `start`이고, 끝나는 위치가 `end`인 Range 반환
+	 */
 	public static fromPositions(start: IPosition, end: IPosition = start): Range {
 		return new Range(start.lineNumber, start.column, end.lineNumber, end.column);
 	}
 
 	/**
-	 * Create a `Range` from an `IRange`.
+	 * `IRange`로부터 `Range` 만들어서 반환
 	 */
 	public static lift(range: undefined | null): null;
 	public static lift(range: IRange): Range;
@@ -384,7 +436,7 @@ export class Range {
 	}
 
 	/**
-	 * Test if `obj` is an `IRange`.
+	 * `obj`가 `IRange`인지 체크.
 	 */
 	public static isIRange(obj: any): obj is IRange {
 		return (
@@ -397,7 +449,7 @@ export class Range {
 	}
 
 	/**
-	 * Test if the two ranges are touching in any way.
+	 * 두 range가 서로 겹치거나 만나는지 체크
 	 */
 	public static areIntersectingOrTouching(a: IRange, b: IRange): boolean {
 		// Check if `a` is before `b`
@@ -415,7 +467,9 @@ export class Range {
 	}
 
 	/**
-	 * Test if the two ranges are intersecting. If the ranges are touching it returns true.
+	 * 두 range가 서로 겹치는지 체크
+	 *
+	 * - 두 range의 끝이 만나기만 하는 경우에는 false 반환.
 	 */
 	public static areIntersecting(a: IRange, b: IRange): boolean {
 		// Check if `a` is before `b`
@@ -433,8 +487,12 @@ export class Range {
 	}
 
 	/**
-	 * A function that compares ranges, useful for sorting ranges
-	 * It will first compare ranges on the startPosition and then on the endPosition
+	 * range 비교하는 함수, 정렬(sort)할 때 유용함
+	 * - 비교 우선순위 :
+	 * 1. start Line Number
+	 * 2. start Column
+	 * 3. end Line Number
+	 * 4. end Column
 	 */
 	public static compareRangesUsingStarts(a: IRange | null | undefined, b: IRange | null | undefined): number {
 		if (a && b) {
@@ -466,8 +524,12 @@ export class Range {
 	}
 
 	/**
-	 * A function that compares ranges, useful for sorting ranges
-	 * It will first compare ranges on the endPosition and then on the startPosition
+	 * range 비교하는 함수, 정렬(sort)할 때 유용함
+	 * - 비교 우선순위 :
+	 * 1. end Line Number
+	 * 2. end Column
+	 * 3. start Line Number
+	 * 4. start Column
 	 */
 	public static compareRangesUsingEnds(a: IRange, b: IRange): number {
 		if (a.endLineNumber === b.endLineNumber) {
@@ -483,7 +545,7 @@ export class Range {
 	}
 
 	/**
-	 * Test if the range spans multiple lines.
+	 * `range`가 여러줄에 걸쳐 있는지 체크
 	 */
 	public static spansMultipleLines(range: IRange): boolean {
 		return range.endLineNumber > range.startLineNumber;

@@ -13,19 +13,19 @@ export class RGBA8 {
 	static readonly Empty = new RGBA8(0, 0, 0, 0);
 
 	/**
-	 * Red: integer in [0-255]
+	 * 빨강: integer in [0-255]
 	 */
 	public readonly r: number;
 	/**
-	 * Green: integer in [0-255]
+	 * 초록: integer in [0-255]
 	 */
 	public readonly g: number;
 	/**
-	 * Blue: integer in [0-255]
+	 * 파랑: integer in [0-255]
 	 */
 	public readonly b: number;
 	/**
-	 * Alpha: integer in [0-255]
+	 * 알파(Alpha): integer in [0-255]
 	 */
 	public readonly a: number;
 

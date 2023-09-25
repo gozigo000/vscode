@@ -1,11 +1,17 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export interface ICompletionStats
+ * export class LineContext
+ * export class CompletionModel
  *--------------------------------------------------------------------------------------------*/
 
 import { quickSelect } from 'vs/base/common/arrays';
 import { CharCode } from 'vs/base/common/charCode';
-import { anyScore, fuzzyScore, FuzzyScore, fuzzyScoreGracefulAggressive, FuzzyScoreOptions, FuzzyScorer } from 'vs/base/common/filters';
+import { anyScore, /* fuzzyScore, */ banacoScore, FuzzyScore, /* fuzzyScoreGracefulAggressive, */ FuzzyScoreOptions, FuzzyScorer } from 'vs/base/common/filters';
 import { compareIgnoreCase } from 'vs/base/common/strings';
 import { InternalSuggestOptions } from 'vs/editor/common/config/editorOptions';
 import { CompletionItemKind, CompletionItemProvider } from 'vs/editor/common/languages';
@@ -25,15 +31,19 @@ export class LineContext {
 	) { }
 }
 
+/** `Nothing` = 0, `All` = 1, `Incr` = 2 */
 const enum Refilter {
+	/**  */
 	Nothing = 0,
+	/** 문서 내에 있는 단어들 전부 점수 계산하는 경우 */
 	All = 1,
+	/** 제안 리스트에 있는 단어들만 대상으로 점수 계산하는 경우 */
 	Incr = 2
 }
 
 /**
  * Sorted, filtered completion view model
- * */
+ */
 export class CompletionModel {
 
 	private readonly _items: CompletionItem[];
@@ -83,7 +93,7 @@ export class CompletionModel {
 		if (this._lineContext.leadingLineContent !== value.leadingLineContent
 			|| this._lineContext.characterCountDelta !== value.characterCountDelta
 		) {
-			this._refilterKind = this._lineContext.characterCountDelta < value.characterCountDelta && this._filteredItems ? Refilter.Incr : Refilter.All;
+			this._refilterKind = (this._lineContext.characterCountDelta < value.characterCountDelta && this._filteredItems) ? Refilter.Incr : Refilter.All;
 			this._lineContext = value;
 		}
 	}
@@ -120,6 +130,7 @@ export class CompletionModel {
 		}
 	}
 
+	/** 제안 리스트 만드는 곳 */
 	private _createCachedState(): void {
 
 		this._itemsByProvider = new Map();
@@ -131,13 +142,14 @@ export class CompletionModel {
 		let wordLow = '';
 
 		// incrementally filter less
-		const source = this._refilterKind === Refilter.All ? this._items : this._filteredItems!;
-		const target: StrictCompletionItem[] = [];
+		const source = (this._refilterKind === Refilter.All) ? this._items : this._filteredItems!; // 매칭 후보 아이템들 담는 곳
+		const target: StrictCompletionItem[] = []; // 매칭 성공한 아이템들 담는 곳
 
-		// picks a score function based on the number of
-		// items that we have to score/filter and based on the
-		// user-configuration
-		const scoreFn: FuzzyScorer = (!this._options.filterGraceful || source.length > 2000) ? fuzzyScore : fuzzyScoreGracefulAggressive;
+		// 퍼지 점수 계산할 함수 고르기
+		// 점수계산(또는 필터링)해야 하는 아이템 갯수랑 사용자 옵션 설정에 기초해서 고름
+		// const scoreFn: FuzzyScorer = (source.length > 2000 || !this._options.filterGraceful) ? fuzzyScore : fuzzyScoreGracefulAggressive;
+		// const scoreFn: FuzzyScorer = (source.length > 2000 || !this._options.filterGraceful) ? fuzzyScore : banacoScore;
+		const scoreFn: FuzzyScorer = (source.length > 2000 || !this._options.filterGraceful) ? banacoScore : banacoScore;
 
 		for (let i = 0; i < source.length; i++) {
 
@@ -161,12 +173,11 @@ export class CompletionModel {
 			const overwriteBefore = item.position.column - item.editStart.column;
 			const wordLen = overwriteBefore + characterCountDelta - (item.position.column - this._column);
 			if (word.length !== wordLen) {
-				word = wordLen === 0 ? '' : leadingLineContent.slice(-wordLen);
+				word = (wordLen === 0) ? '' : leadingLineContent.slice(-wordLen);
 				wordLow = word.toLowerCase();
 			}
 
-			// remember the word against which this item was
-			// scored
+			// 아이템의 점수 계산시 비교대상이 되는 단어 기억해놓기
 			item.word = word;
 
 			if (wordLen === 0) {
@@ -215,24 +226,24 @@ export class CompletionModel {
 					}
 
 				} else {
-					// by default match `word` against the `label`
+					// 기본 케이스 - scoreFn으로 `word`와 `label` 비교해서 점수 계산
 					const match = scoreFn(word, wordLow, wordPos, item.textLabel, item.labelLow, 0, this._fuzzyScoreOptions);
 					if (!match) {
-						continue; // NO match
+						continue; // 매칭 실패!
 					}
-					item.score = match;
+					item.score = match; // 매칭 성공! - 퍼지 점수 기록
 				}
 			}
 
-			item.idx = i;
+			item.idx = i; // 매칭 성공한 아이템의 source[i] 인덱스 기록
 			item.distance = this._wordDistance.distance(item.position, item.completion);
-			target.push(item as StrictCompletionItem);
+			target.push(item as StrictCompletionItem); // 매칭 성공한 아이템 담기
 
 			// update stats
-			labelLengths.push(item.textLabel.length);
+			labelLengths.push(item.textLabel.length); // 매칭 성공한 아이템의 문자열 길이 담기
 		}
 
-		this._filteredItems = target.sort(this._snippetCompareFn);
+		this._filteredItems = target.sort(this._snippetCompareFn); // 매칭 성공한 아이템들 정렬하기
 		this._refilterKind = Refilter.Nothing;
 		this._stats = {
 			pLabelLen: labelLengths.length ?
@@ -240,7 +251,7 @@ export class CompletionModel {
 				: 0
 		};
 	}
-
+	/** 매칭 성공한 아이템들 정렬 기준 함수 */
 	private static _compareCompletionItems(a: StrictCompletionItem, b: StrictCompletionItem): number {
 		if (a.score[0] > b.score[0]) {
 			return -1;

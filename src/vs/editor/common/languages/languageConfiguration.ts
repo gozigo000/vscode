@@ -36,7 +36,7 @@ export interface LanguageConfiguration {
 	 */
 	brackets?: CharacterPair[];
 	/**
-	 * The language's word definition.
+	 * 단어 정규표현식 정의 (The language's word definition)
 	 * If the language supports Unicode identifiers (e.g. JavaScript), it is preferable
 	 * to provide a word definition that uses exclusion of known separators.
 	 * e.g.: A regex that matches anything except known separators (and dot is allowed to occur in a floating point number):

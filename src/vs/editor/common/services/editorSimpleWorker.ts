@@ -3,6 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// * [개요] export
+// * export interface `IMirrorModel` extends IMirrorTextModel
+// * export interface `IWorkerContext`
+// * export interface `IRawModelData`
+// * export interface `ICommonModel` extends ILinkComputerTarget, IDocumentColorComputerTarget, IMirrorModel
+// * export interface `IForeignModuleFactory`
+//[*]export class `EditorSimpleWorker` implements IRequestHandler, IDisposable
+// * export function `create`
+
 import { stringDiff } from 'vs/base/common/diff/diff';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { URI } from 'vs/base/common/uri';
@@ -78,16 +87,16 @@ export interface ICommonModel extends ILinkComputerTarget, IDocumentColorCompute
 }
 
 /**
- * Range of a word inside a model.
+ * 모델 내에서 단어의 범위
  * @internal
  */
 interface IWordRange {
 	/**
-	 * The index where the word starts.
+	 * 단어의 시작 인덱스
 	 */
 	readonly start: number;
 	/**
-	 * The index where the word ends.
+	 * 단어의 끝 인덱스
 	 */
 	readonly end: number;
 }
@@ -169,10 +178,10 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		};
 	}
 
-
+	/** 정규표현식 `wordDefinition`을 만족하는 값들에 대한 이터러블 반환 */
 	public words(wordDefinition: RegExp): Iterable<string> {
 
-		const lines = this._lines;
+		const lines = this._lines; // 각 줄의 내용을 담고 있는 문자열 배열
 		const wordenize = this._wordenize.bind(this);
 
 		let lineNumber = 0;
@@ -216,6 +225,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		return words;
 	}
 
+	/** `content` 문자열에서 정규표현식 `wordDefinition`을 만족하는 결과들 반환 */
 	private _wordenize(content: string, wordDefinition: RegExp): IWordRange[] {
 		const result: IWordRange[] = [];
 		let match: RegExpExecArray | null;
@@ -342,6 +352,8 @@ export interface IForeignModuleFactory {
 declare const require: any;
 
 /**
+ * 에디터 심플 워커
+ *
  * @internal
  */
 export class EditorSimpleWorker implements IRequestHandler, IDisposable {

@@ -893,6 +893,16 @@ export class TextAreaHandler extends ViewPart {
 		}
 		ta.setTextDecoration(`${renderData.underline ? ' underline' : ''}${renderData.strikethrough ? ' line-through' : ''}`);
 
+		//#region 테스트용
+		ta.setTop(50);
+		ta.setTextDecoration(' underline');
+		ta.setBackgroundColor('blue');
+		ta.setFontSize(30);
+		ta.setLineHeight(50);
+		ta.setHeight(50);
+		ta.setWidth(100);
+		//#endregion
+
 		tac.setTop(renderData.useCover ? renderData.top : 0);
 		tac.setLeft(renderData.useCover ? renderData.left : 0);
 		tac.setWidth(renderData.useCover ? renderData.width : 0);

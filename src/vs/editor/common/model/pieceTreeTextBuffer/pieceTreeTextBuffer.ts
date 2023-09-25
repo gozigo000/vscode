@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export interface IValidatedEditOperation
+ * export class `PieceTreeTextBuffer` extends `Disposable` implements `ITextBuffer`
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from 'vs/base/common/event';
@@ -31,6 +36,7 @@ interface IReverseSingleEditOperation extends IValidEditOperation {
 	sortIndex: number;
 }
 
+/** 조각 트리 텍스트 버퍼 */
 export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	private _pieceTree: PieceTreeBase;
 	private readonly _BOM: string;
@@ -41,6 +47,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	private readonly _onDidChangeContent: Emitter<void> = this._register(new Emitter<void>());
 	public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
 
+	// 생성자
 	constructor(chunks: StringBuffer[], BOM: string, eol: '\r\n' | '\n', containsRTL: boolean, containsUnusualLineTerminators: boolean, isBasicASCII: boolean, eolNormalized: boolean) {
 		super();
 		this._BOM = BOM;
@@ -50,7 +57,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		this._pieceTree = new PieceTreeBase(chunks, eol, eolNormalized);
 	}
 
-	// #region TextBuffer
+	// #region 텍스트 버퍼
 	public equals(other: ITextBuffer): boolean {
 		if (!(other instanceof PieceTreeTextBuffer)) {
 			return false;
@@ -78,6 +85,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	public getBOM(): string {
 		return this._BOM;
 	}
+	/** 조각 트리의 EOL 반환 */
 	public getEOL(): '\r\n' | '\n' {
 		return this._pieceTree.getEOL();
 	}
@@ -110,6 +118,10 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		return this._pieceTree.getValueInRange(range, lineEnding);
 	}
 
+	/**
+	 * `range` 범위의 문자열의 글자 갯수
+	 * - 글자들은 모두 "기본 다국어 평면"에 속해야 함
+	 */
 	public getValueLengthInRange(range: Range, eol: EndOfLinePreference = EndOfLinePreference.TextDefined): number {
 		if (range.isEmpty()) {
 			return 0;
@@ -126,7 +138,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		// if the requested EOL doesn't match the text EOL
 		let eolOffsetCompensation = 0;
 		const desiredEOL = this._getEndOfLine(eol);
-		const actualEOL = this.getEOL();
+		const actualEOL = this.getEOL(); // 조각 트리의 EOL
 		if (desiredEOL.length !== actualEOL.length) {
 			const delta = desiredEOL.length - actualEOL.length;
 			const eolCount = range.endLineNumber - range.startLineNumber;
@@ -136,18 +148,22 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		return endOffset - startOffset + eolOffsetCompensation;
 	}
 
+	/**
+	 * `range` 범위의 문자열의 글자 갯수
+	 * - "다국어 기본 평면(2 byte)" + "보충 평면(4 byte)"에 속하는 글자들
+	 */
 	public getCharacterCountInRange(range: Range, eol: EndOfLinePreference = EndOfLinePreference.TextDefined): number {
 		if (this._mightContainNonBasicASCII) {
 			// we must count by iterating
 
-			let result = 0;
+			let result = 0; // 글자 갯수 카운트
 
 			const fromLineNumber = range.startLineNumber;
 			const toLineNumber = range.endLineNumber;
 			for (let lineNumber = fromLineNumber; lineNumber <= toLineNumber; lineNumber++) {
 				const lineContent = this.getLineContent(lineNumber);
-				const fromOffset = (lineNumber === fromLineNumber ? range.startColumn - 1 : 0);
-				const toOffset = (lineNumber === toLineNumber ? range.endColumn - 1 : lineContent.length);
+				const fromOffset = (lineNumber === fromLineNumber) ? range.startColumn - 1 : 0;
+				const toOffset = (lineNumber === toLineNumber) ? range.endColumn - 1 : lineContent.length;
 
 				for (let offset = fromOffset; offset < toOffset; offset++) {
 					if (strings.isHighSurrogate(lineContent.charCodeAt(offset))) {
@@ -199,10 +215,17 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		return 1;
 	}
 
+	/** `lineNumber`번째 줄의 오른쪽 끝 column 번호 반환 */
 	public getLineMaxColumn(lineNumber: number): number {
 		return this.getLineLength(lineNumber) + 1;
 	}
 
+	/**
+	 * `lineNumber`번째 줄에서 공백이 아닌 첫 문자의 column 번호 반환
+	 * @example
+	 * ...ABC..DEFG....
+	 *    ^
+	 */
 	public getLineFirstNonWhitespaceColumn(lineNumber: number): number {
 		const result = strings.firstNonWhitespaceIndex(this.getLineContent(lineNumber));
 		if (result === -1) {
@@ -211,6 +234,12 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		return result + 1;
 	}
 
+	/**
+	 * `lineNumber`번째 줄에서 공백이 아닌 마지막 문자의 column 번호 반환
+	 * @example
+	 * ...ABC..DEFG....
+	 *            ^
+	 */
 	public getLineLastNonWhitespaceColumn(lineNumber: number): number {
 		const result = strings.lastNonWhitespaceIndex(this.getLineContent(lineNumber));
 		if (result === -1) {
@@ -232,10 +261,12 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		}
 	}
 
+	/** 조각 트리의 EOL 설정 */
 	public setEOL(newEOL: '\r\n' | '\n'): void {
 		this._pieceTree.setEOL(newEOL);
 	}
 
+	/**  */
 	public applyEdits(rawOperations: ValidAnnotatedEditOperation[], recordTrimAutoWhitespace: boolean, computeUndoEdits: boolean): ApplyEditsResult {
 		let mightContainRTL = this._mightContainRTL;
 		let mightContainUnusualLineTerminators = this._mightContainUnusualLineTerminators;
@@ -274,7 +305,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 				[eolCount, firstLineLength, lastLineLength, strEOL] = countEOL(op.text);
 
 				const bufferEOL = this.getEOL();
-				const expectedStrEOL = (bufferEOL === '\r\n' ? StringEOL.CRLF : StringEOL.LF);
+				const expectedStrEOL = (bufferEOL === '\r\n') ? StringEOL.CRLF : StringEOL.LF;
 				if (strEOL === StringEOL.Unknown || strEOL === expectedStrEOL) {
 					validText = op.text;
 				} else {
@@ -297,7 +328,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 			};
 		}
 
-		// Sort operations ascending
+		// `operations.range`를 기준으로 오름차순 정렬
 		operations.sort(PieceTreeTextBuffer._sortOpsAscending);
 
 		let hasTouchingRanges = false;
@@ -319,7 +350,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		}
 
 		// Delta encode operations
-		const reverseRanges = (computeUndoEdits || recordTrimAutoWhitespace ? PieceTreeTextBuffer._getInverseEditRanges(operations) : []);
+		const reverseRanges = (computeUndoEdits || recordTrimAutoWhitespace) ? PieceTreeTextBuffer._getInverseEditRanges(operations) : [];
 		const newTrimAutoWhitespaceCandidates: { lineNumber: number; oldContent: string }[] = [];
 		if (recordTrimAutoWhitespace) {
 			for (let i = 0; i < operations.length; i++) {
@@ -376,6 +407,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 		const contentChanges = this._doApplyEdits(operations);
 
+
 		let trimAutoWhitespaceLineNumbers: number[] | null = null;
 		if (recordTrimAutoWhitespace && newTrimAutoWhitespaceCandidates.length > 0) {
 			// sort line numbers auto whitespace removal candidates for next edit descending
@@ -400,6 +432,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 			}
 		}
 
+		// 이벤트 방출
 		this._onDidChangeContent.fire();
 
 		return new ApplyEditsResult(
@@ -492,12 +525,12 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 			}
 
 			if (op.text) {
-				// replacement
+				// 교체 작업
 				this._pieceTree.delete(op.rangeOffset, op.rangeLength);
 				this._pieceTree.insert(op.rangeOffset, op.text, true);
 
 			} else {
-				// deletion
+				// 삭제 작업
 				this._pieceTree.delete(op.rangeOffset, op.rangeLength);
 			}
 
@@ -519,7 +552,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 	// #endregion
 
-	// #region helper
+	// #region 헬퍼 (helper)
 	// testing purpose.
 	public getPieceTree(): PieceTreeBase {
 		return this._pieceTree;
@@ -606,6 +639,14 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		return result;
 	}
 
+	/**
+	 * range 기준으로 두 작업을 비교하는 함수
+	 * - 비교 우선순위 :
+	 * 1. end Line Number
+	 * 2. end Column
+	 * 3. start Line Number
+	 * 4. start Column
+	 */
 	private static _sortOpsAscending(a: IValidatedEditOperation, b: IValidatedEditOperation): number {
 		const r = Range.compareRangesUsingEnds(a.range, b.range);
 		if (r === 0) {

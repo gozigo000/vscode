@@ -1,6 +1,10 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export abstract class `WordDistance`
  *--------------------------------------------------------------------------------------------*/
 
 import { binarySearch, isFalsyOrEmpty } from 'vs/base/common/arrays';
@@ -57,13 +61,13 @@ export abstract class WordDistance {
 				if (item.kind === CompletionItemKind.Keyword) {
 					return 2 << 20;
 				}
-				const word = typeof item.label === 'string' ? item.label : item.label.label;
+				const word = (typeof item.label === 'string') ? item.label : item.label.label;
 				const wordLines = wordRanges[word];
 				if (isFalsyOrEmpty(wordLines)) {
 					return 2 << 20;
 				}
 				const idx = binarySearch(wordLines, Range.fromPositions(anchor), Range.compareRangesUsingStarts);
-				const bestWordRange = idx >= 0 ? wordLines[idx] : wordLines[Math.max(0, ~idx - 1)];
+				const bestWordRange = (idx >= 0) ? wordLines[idx] : wordLines[Math.max(0, ~idx - 1)];
 				let blockDistance = ranges.length;
 				for (const range of ranges) {
 					if (!Range.containsRange(range.range, bestWordRange)) {

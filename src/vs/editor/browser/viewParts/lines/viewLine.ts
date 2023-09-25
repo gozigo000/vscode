@@ -195,7 +195,7 @@ export class ViewLine implements IVisibleLine {
 		const renderLineInput = new RenderLineInput(
 			options.useMonospaceOptimizations,
 			options.canUseHalfwidthRightwardsArrow,
-			lineData.content,
+			lineData.content, // 각 줄마다 담겨 있는 문자열
 			lineData.continuesWithWrappedLine,
 			lineData.isBasicASCII,
 			lineData.containsRTL,

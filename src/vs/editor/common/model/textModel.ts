@@ -3,6 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [개요] export
+ * export function createTextBufferFactory
+ * export function createTextBufferFactoryFromStream
+ * export function createTextBufferFactoryFromSnapshot
+ * export function createTextBuffer
+[*]export class `TextModel` extends `Disposable` implements `model.ITextModel`, `IDecorationsTreesHost`
+ * export interface IDecorationsTreesHost
+ * export class `ModelDecorationOverviewRulerOptions` extends `DecorationOptions`
+ * export class `ModelDecorationGlyphMarginOptions`
+ * export class `ModelDecorationMinimapOptions` extends `DecorationOptions`
+ * export class `ModelDecorationInjectedTextOptions` implements `model.InjectedTextOptions`
+ * export class `ModelDecorationOptions` implements `model.IModelDecorationOptions`
+ * export class `AttachedViews`
+ * export interface IAttachedViewState
+ */
+
 import { ArrayQueue, pushMany } from 'vs/base/common/arrays';
 import { VSBuffer, VSBufferReadableStream } from 'vs/base/common/buffer';
 import { Color } from 'vs/base/common/color';
@@ -15,6 +32,7 @@ import * as strings from 'vs/base/common/strings';
 import { ThemeColor } from 'vs/base/common/themables';
 import { Constants } from 'vs/base/common/uint';
 import { URI } from 'vs/base/common/uri';
+
 import { ISingleEditOperation } from 'vs/editor/common/core/editOperation';
 import { countEOL } from 'vs/editor/common/core/eolCounter';
 import { normalizeIndentation } from 'vs/editor/common/core/indentation';
@@ -25,9 +43,11 @@ import { Selection } from 'vs/editor/common/core/selection';
 import { TextChange } from 'vs/editor/common/core/textChange';
 import { EDITOR_MODEL_DEFAULTS } from 'vs/editor/common/core/textModelDefaults';
 import { IWordAtPosition } from 'vs/editor/common/core/wordHelper';
+
 import { FormattingOptions } from 'vs/editor/common/languages';
 import { ILanguageSelection, ILanguageService } from 'vs/editor/common/languages/language';
 import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry';
+
 import * as model from 'vs/editor/common/model';
 import { BracketPairsTextModelPart } from 'vs/editor/common/model/bracketPairsTextModelPart/bracketPairsImpl';
 import { ColorizedBracketPairsDecorationProvider } from 'vs/editor/common/model/bracketPairsTextModelPart/colorizedBracketPairsDecorationProvider';
@@ -39,10 +59,12 @@ import { PieceTreeTextBuffer } from 'vs/editor/common/model/pieceTreeTextBuffer/
 import { PieceTreeTextBufferBuilder } from 'vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder';
 import { SearchParams, TextModelSearch } from 'vs/editor/common/model/textModelSearch';
 import { TokenizationTextModelPart } from 'vs/editor/common/model/tokenizationTextModelPart';
+
 import { IBracketPairsTextModelPart } from 'vs/editor/common/textModelBracketPairs';
 import { IModelContentChangedEvent, IModelDecorationsChangedEvent, IModelOptionsChangedEvent, InternalModelContentChangeEvent, LineInjectedText, ModelInjectedTextChangedEvent, ModelRawChange, ModelRawContentChangedEvent, ModelRawEOLChanged, ModelRawFlush, ModelRawLineChanged, ModelRawLinesDeleted, ModelRawLinesInserted } from 'vs/editor/common/textModelEvents';
 import { IGuidesTextModelPart } from 'vs/editor/common/textModelGuides';
 import { ITokenizationTextModelPart } from 'vs/editor/common/tokenizationTextModelPart';
+
 import { IColorTheme } from 'vs/platform/theme/common/themeService';
 import { IUndoRedoService, ResourceEditStackSnapshot, UndoRedoGroup } from 'vs/platform/undoRedo/common/undoRedo';
 
@@ -178,6 +200,7 @@ export class TextModel extends Disposable implements model.ITextModel, IDecorati
 	private static readonly LARGE_FILE_SIZE_THRESHOLD = 20 * 1024 * 1024; // 20 MB;
 	private static readonly LARGE_FILE_LINE_COUNT_THRESHOLD = 300 * 1000; // 300K lines
 
+	// 기본 생성 옵션
 	public static DEFAULT_CREATION_OPTIONS: model.ITextModelCreationOptions = {
 		isForSimpleWidget: false,
 		tabSize: EDITOR_MODEL_DEFAULTS.tabSize,
@@ -206,7 +229,7 @@ export class TextModel extends Disposable implements model.ITextModel, IDecorati
 		return new model.TextModelResolvedOptions(options);
 	}
 
-	//#region Events
+	//#region 이벤트s
 	private readonly _onWillDispose: Emitter<void> = this._register(new Emitter<void>());
 	public readonly onWillDispose: Event<void> = this._onWillDispose.event;
 
@@ -237,11 +260,12 @@ export class TextModel extends Disposable implements model.ITextModel, IDecorati
 	}
 	//#endregion
 
+
 	public readonly id: string;
 	public readonly isForSimpleWidget: boolean;
 	private readonly _associatedResource: URI;
 	private _attachedEditorCount: number;
-	private _buffer: model.ITextBuffer;
+	private _buffer: model.ITextBuffer; // 조각 트리 텍스트 버퍼
 	private _bufferDisposable: IDisposable;
 	private _options: model.TextModelResolvedOptions;
 	private _languageSelectionListener = this._register(new MutableDisposable<IDisposable>());
@@ -258,14 +282,15 @@ export class TextModel extends Disposable implements model.ITextModel, IDecorati
 	private readonly _isTooLargeForSyncing: boolean;
 	private readonly _isTooLargeForTokenization: boolean;
 
-	//#region Editing
+
+	//#region 편집 (Editing)
 	private readonly _commandManager: EditStack;
 	private _isUndoing: boolean;
 	private _isRedoing: boolean;
 	private _trimAutoWhitespaceLines: number[] | null;
 	//#endregion
 
-	//#region Decorations
+	//#region 데코레이션s
 	/**
 	 * Used to workaround broken clients that might attempt using a decoration id generated by a different model.
 	 * It is not globally unique in order to limit it to one character.
@@ -289,6 +314,7 @@ export class TextModel extends Disposable implements model.ITextModel, IDecorati
 
 	private readonly _attachedViews = new AttachedViews();
 
+	// 생성자
 	constructor(
 		source: string | model.ITextBufferFactory,
 		languageIdOrSelection: string | ILanguageSelection,
@@ -1978,7 +2004,7 @@ function indentOfLine(line: string): number {
 	return indent;
 }
 
-//#region Decorations
+//#region 데코레이션s
 
 function isNodeInOverviewRuler(node: IntervalNode): boolean {
 	return (node.options.overviewRuler && node.options.overviewRuler.color ? true : false);

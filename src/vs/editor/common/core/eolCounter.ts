@@ -1,10 +1,16 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export const enum StringEOL
+ * export function countEOL
  *--------------------------------------------------------------------------------------------*/
 
 import { CharCode } from 'vs/base/common/charCode';
 
+/** `Unknown` = 0, `Invalid` = 3, `LF` = 1, `CRLF` = 2 */
 export const enum StringEOL {
 	Unknown = 0,
 	Invalid = 3,

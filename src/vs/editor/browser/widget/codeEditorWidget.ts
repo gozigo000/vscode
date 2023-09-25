@@ -106,6 +106,7 @@ class ModelData {
 	}
 }
 
+/** 코드 에디터 위젯 */
 export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeEditor {
 
 	private static readonly dropIntoEditorDecorationOptions = ModelDecorationOptions.register({
@@ -1596,7 +1597,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
 		return this._modelData.view.getOffsetForColumn(lineNumber, column);
 	}
 
-	public render(forceRedraw: boolean = false): void {
+	public render(forceRedraw: boolean = false): void { //
 		if (!this._modelData || !this._modelData.hasRealView) {
 			return;
 		}

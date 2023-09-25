@@ -3,6 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [개요]
+ * export function getPlatformTextDecode
+ * export function decodeUTF16LE
+ * export class StringBuilder
+ */
+
 import * as strings from 'vs/base/common/strings';
 import * as platform from 'vs/base/common/platform';
 import * as buffer from 'vs/base/common/buffer';
@@ -24,6 +31,7 @@ function getUTF16BE_TextDecoder(): TextDecoder {
 }
 
 let _platformTextDecoder: TextDecoder | null;
+/** UTF16 TextDecode 반환 */
 export function getPlatformTextDecoder(): TextDecoder {
 	if (!_platformTextDecoder) {
 		_platformTextDecoder = platform.isLittleEndian() ? getUTF16LE_TextDecoder() : getUTF16BE_TextDecoder();
@@ -31,6 +39,7 @@ export function getPlatformTextDecoder(): TextDecoder {
 	return _platformTextDecoder;
 }
 
+/** 디코딩된 문자열 반환 */
 export function decodeUTF16LE(source: Uint8Array, offset: number, len: number): string {
 	const view = new Uint16Array(source.buffer, offset, len);
 	if (len > 0 && (view[0] === 0xFEFF || view[0] === 0xFFFE)) {
@@ -53,6 +62,7 @@ function compatDecodeUTF16LE(source: Uint8Array, offset: number, len: number): s
 	return result.join('');
 }
 
+/**  */
 export class StringBuilder {
 
 	private readonly _capacity: number;
@@ -61,6 +71,7 @@ export class StringBuilder {
 	private _completedStrings: string[] | null;
 	private _bufferLength: number;
 
+	// 생성자
 	constructor(capacity: number) {
 		this._capacity = capacity | 0;
 		this._buffer = new Uint16Array(this._capacity);
@@ -69,11 +80,13 @@ export class StringBuilder {
 		this._bufferLength = 0;
 	}
 
+	/** 버퍼 비우기 */
 	public reset(): void {
 		this._completedStrings = null;
 		this._bufferLength = 0;
 	}
 
+	/**  */
 	public build(): string {
 		if (this._completedStrings !== null) {
 			this._flushBuffer();
@@ -91,6 +104,11 @@ export class StringBuilder {
 		return getPlatformTextDecoder().decode(view);
 	}
 
+	/**
+	 * 버퍼 비우기
+	 * - 참고: 버퍼 플러시는 데이터를 임시 저장소에서 영구적인 데이터 저장소로 전송하는 것을 말합니다.
+	 * - 참고: https://stackoverflow.com/questions/15042849/what-does-flushing-the-buffer-mean
+	 */
 	private _flushBuffer(): void {
 		const bufferString = this._buildBuffer();
 		this._bufferLength = 0;
@@ -103,7 +121,7 @@ export class StringBuilder {
 	}
 
 	/**
-	 * Append a char code (<2^16)
+	 * 버퍼에 char code (< 2^16) 하나 추가하기
 	 */
 	public appendCharCode(charCode: number): void {
 		const remainingSpace = this._capacity - this._bufferLength;
@@ -118,7 +136,7 @@ export class StringBuilder {
 	}
 
 	/**
-	 * Append an ASCII char code (<2^8)
+	 * 버퍼에 ASCII char code (< 2^8) 하나 추가하기
 	 */
 	public appendASCIICharCode(charCode: number): void {
 		if (this._bufferLength === this._capacity) {
@@ -128,6 +146,9 @@ export class StringBuilder {
 		this._buffer[this._bufferLength++] = charCode;
 	}
 
+	/**
+	 * 버퍼에 문자열 추가하기
+	 */
 	public appendString(str: string): void {
 		const strLen = str.length;
 

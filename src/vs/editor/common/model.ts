@@ -2,6 +2,45 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+/*
+ * [개요] export interface & class
+ * export interface IDecorationOptions
+ * export interface IModelDecorationGlyphMarginOptions
+ * export interface IModelDecorationOverviewRulerOptions extends IDecorationOptions
+ * export interface IModelDecorationMinimapOptions extends IDecorationOptions
+ * export interface IModelDecorationOptions
+ * export interface InjectedTextOptions
+ * export interface IModelDeltaDecoration
+ * export interface IModelDecoration
+ * export interface IModelDecorationsChangeAccessor
+ *
+ * export interface ISingleEditOperationIdentifier
+ * export interface IIdentifiedSingleEditOperation extends ISingleEditOperation
+ * export interface IValidEditOperation
+ * export interface ICursorStateComputer
+ *
+ * export class TextModelResolvedOptions
+ * export interface ITextModelCreationOptions
+ * export interface BracketPairColorizationOptions
+ * export interface ITextModelUpdateOptions
+ *
+ * export class FindMatch
+ *
+ * export interface ITextSnapshot
+ *
+[*]export interface ITextModel
+ * export interface IAttachedView
+ * export interface ITextBufferBuilder
+ * export interface ITextBufferFactory
+ *
+ * export class ValidAnnotatedEditOperation implements IIdentifiedSingleEditOperation
+ *
+[*]export interface IReadonlyTextBuffer
+ * export class SearchData
+[*]export interface `ITextBuffer` extends IReadonlyTextBuffer
+ * export class ApplyEditsResult
+ * export interface IInternalModelContentChange extends IModelContentChange
+ */
 
 import { Event } from 'vs/base/common/event';
 import { IMarkdownString } from 'vs/base/common/htmlContent';
@@ -26,6 +65,9 @@ import { UndoRedoGroup } from 'vs/platform/undoRedo/common/undoRedo';
 
 /**
  * Vertical Lane in the overview ruler of the editor.
+ *
+ * `Left` = 1, `Center` = 2, `Right` = 4, `Full` = 7
+ * - 참고: `overview ruler` - https://stackoverflow.com/questions/50593516/colored-pixels-in-scrollbar-in-vs-code/51684408#51684408
  */
 export enum OverviewRulerLane {
 	Left = 1,
@@ -36,6 +78,9 @@ export enum OverviewRulerLane {
 
 /**
  * Vertical Lane in the glyph margin of the editor.
+ *
+ * `Left` = 1, `Right` = 2
+ * - 참고: `glyph margin` - https://microchipdeveloper.com/mplabx:glyph-margin
  */
 export enum GlyphMarginLane {
 	Left = 1,
@@ -44,6 +89,9 @@ export enum GlyphMarginLane {
 
 /**
  * Position in the minimap to render the decoration.
+ *
+ * `Inline` = 1, `Gutter` = 2
+ * - 참고: `Gutter` - https://support.smartbear.com/testcomplete/docs/scripting/code-editor/window/gutter.html
  */
 export enum MinimapPosition {
 	Inline = 1,
@@ -53,11 +101,13 @@ export enum MinimapPosition {
 export interface IDecorationOptions {
 	/**
 	 * CSS color to render.
+	 *
 	 * e.g.: rgba(100, 100, 100, 0.5) or a color from the color registry
 	 */
 	color: string | ThemeColor | undefined;
 	/**
 	 * CSS color to render.
+	 *
 	 * e.g.: rgba(100, 100, 100, 0.5) or a color from the color registry
 	 */
 	darkColor?: string | ThemeColor;
@@ -335,7 +385,9 @@ export interface IModelDecorationsChangeAccessor {
 }
 
 /**
- * End of line character preference.
+ * EOL character preference.
+ *
+ * `TextDefined` = 0, `LF` = 1, `CRLF` = 2
  */
 export const enum EndOfLinePreference {
 	/**
@@ -354,6 +406,8 @@ export const enum EndOfLinePreference {
 
 /**
  * The default end of line to use when instantiating models.
+ *
+ * `LF` = 1, `CRLF` = 2
  */
 export const enum DefaultEndOfLine {
 	/**
@@ -368,6 +422,8 @@ export const enum DefaultEndOfLine {
 
 /**
  * End of line character preference.
+ *
+ * `LF` = 0, `CRLF` = 1
  */
 export const enum EndOfLineSequence {
 	/**
@@ -424,11 +480,13 @@ export interface IValidEditOperation {
 	 */
 	identifier: ISingleEditOperationIdentifier | null;
 	/**
-	 * The range to replace. This can be empty to emulate a simple insert.
+	 * The range to replace. \
+	 * This can be empty to emulate a simple insert.
 	 */
 	range: Range;
 	/**
-	 * The text to replace with. This can be empty to emulate a simple delete.
+	 * The text to replace with. \
+	 * This can be empty to emulate a simple delete.
 	 */
 	text: string;
 	/**
@@ -542,7 +600,12 @@ export interface ITextModelUpdateOptions {
 	trimAutoWhitespace?: boolean;
 	bracketColorizationOptions?: BracketPairColorizationOptions;
 }
-
+/**
+ * 프로퍼티s \
+ * -`_findMatchBrand`: void = undefined \
+ * -public readonly `range`: Range \
+ * -public readonly `matches`: string[] | null
+ */
 export class FindMatch {
 	_findMatchBrand: void = undefined;
 
@@ -586,7 +649,7 @@ export function isITextSnapshot(obj: any): obj is ITextSnapshot {
 }
 
 /**
- * A model.
+ * 모델 (A model)
  */
 export interface ITextModel {
 
@@ -1273,22 +1336,18 @@ export const enum PositionAffinity {
 	 * Prefers the left most position.
 	*/
 	Left = 0,
-
 	/**
 	 * Prefers the right most position.
 	*/
 	Right = 1,
-
 	/**
 	 * No preference.
 	*/
 	None = 2,
-
 	/**
 	 * If the given position is on injected text, prefers the position left of it.
 	*/
 	LeftOfInjectedText = 3,
-
 	/**
 	 * If the given position is on injected text, prefers the position right of it.
 	*/
@@ -1335,6 +1394,7 @@ export class ValidAnnotatedEditOperation implements IIdentifiedSingleEditOperati
 /**
  * @internal
  *
+ * 읽기전용 텍스트 버퍼 \
  * `lineNumber` is 1 based.
  */
 export interface IReadonlyTextBuffer {
@@ -1369,11 +1429,16 @@ export interface IReadonlyTextBuffer {
 
 /**
  * @internal
+ *
+ * 검색 데이터
+ * -`regex`: RegExp - 검색할 정규표현식 \
+ * -`wordSeparators`: WordCharacterClassifier | null - \
+ * -`simpleSearch`: string | null -
  */
 export class SearchData {
 
 	/**
-	 * The regex to search for. Always defined.
+	 * 검색할 정규표현식
 	 */
 	public readonly regex: RegExp;
 	/**
@@ -1394,6 +1459,8 @@ export class SearchData {
 
 /**
  * @internal
+ *
+ * 텍스트 버퍼
  */
 export interface ITextBuffer extends IReadonlyTextBuffer {
 	setEOL(newEOL: '\r\n' | '\n'): void;

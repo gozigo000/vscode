@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export class OffsetRange
+ * export class OffsetRangeSet
  *--------------------------------------------------------------------------------------------*/
 
 import { BugIndicatingError } from 'vs/base/common/errors';
@@ -38,6 +43,7 @@ export class OffsetRange {
 		return new OffsetRange(0, length);
 	}
 
+	// 생성자
 	constructor(public readonly start: number, public readonly endExclusive: number) {
 		if (start > endExclusive) {
 			throw new BugIndicatingError(`Invalid range: ${this.toString()}`);

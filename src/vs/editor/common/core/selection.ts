@@ -1,67 +1,75 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export interface ISelection
+ * export const enum SelectionDirection
+ * export class “Selection” extends “Range”
  *--------------------------------------------------------------------------------------------*/
 
 import { IPosition, Position } from 'vs/editor/common/core/position';
 import { Range } from 'vs/editor/common/core/range';
 
 /**
- * A selection in the editor.
- * The selection is a range that has an orientation.
+ * 에디터에서 선택범위(selection)
+ *
+ * 선택범위는 방향(orientation)이 있는 범위입니다
  */
 export interface ISelection {
 	/**
-	 * The line number on which the selection has started.
+	 * line 번호 on which the selection has started.
 	 */
 	readonly selectionStartLineNumber: number;
 	/**
-	 * The column on `selectionStartLineNumber` where the selection has started.
+	 * column 번호 on `selectionStartLineNumber` where the selection has started.
 	 */
 	readonly selectionStartColumn: number;
 	/**
-	 * The line number on which the selection has ended.
+	 * line 번호 on which the selection has ended.
 	 */
 	readonly positionLineNumber: number;
 	/**
-	 * The column on `positionLineNumber` where the selection has ended.
+	 * column 번호 on `positionLineNumber` where the selection has ended.
 	 */
 	readonly positionColumn: number;
 }
 
 /**
- * The direction of a selection.
+ * 선택범위(selection)의 방향
  */
 export const enum SelectionDirection {
 	/**
-	 * The selection starts above where it ends.
+	 * 위에서 아래로 선택함
 	 */
 	LTR,
 	/**
-	 * The selection starts below where it ends.
+	 * 아래에서 위로 선택함
 	 */
 	RTL
 }
 
 /**
- * A selection in the editor.
- * The selection is a range that has an orientation.
+ * 에디터에서 선택범위(selection)
+ *
+ * 선택범위는 방향(orientation)이 있는 범위입니다
  */
 export class Selection extends Range {
 	/**
-	 * The line number on which the selection has started.
+	 * line 번호 on which the selection has started.
 	 */
 	public readonly selectionStartLineNumber: number;
 	/**
-	 * The column on `selectionStartLineNumber` where the selection has started.
+	 * column 번호 on `selectionStartLineNumber` where the selection has started.
 	 */
 	public readonly selectionStartColumn: number;
 	/**
-	 * The line number on which the selection has ended.
+	 * line 번호 on which the selection has ended.
 	 */
 	public readonly positionLineNumber: number;
 	/**
-	 * The column on `positionLineNumber` where the selection has ended.
+	 * column 번호 on `positionLineNumber` where the selection has ended.
 	 */
 	public readonly positionColumn: number;
 
@@ -74,14 +82,14 @@ export class Selection extends Range {
 	}
 
 	/**
-	 * Transform to a human-readable representation.
+	 * `"[line,column -> line,column]"` 형태의 문자열로 반환 (human-readable)
 	 */
 	public override toString(): string {
 		return '[' + this.selectionStartLineNumber + ',' + this.selectionStartColumn + ' -> ' + this.positionLineNumber + ',' + this.positionColumn + ']';
 	}
 
 	/**
-	 * Test if equals other selection.
+	 * 체크 if equals other selection.
 	 */
 	public equalsSelection(other: ISelection): boolean {
 		return (
@@ -90,7 +98,7 @@ export class Selection extends Range {
 	}
 
 	/**
-	 * Test if the two selections are equal.
+	 * 체크 if the two selections are equal.
 	 */
 	public static selectionsEqual(a: ISelection, b: ISelection): boolean {
 		return (
@@ -102,7 +110,7 @@ export class Selection extends Range {
 	}
 
 	/**
-	 * Get directions (LTR or RTL).
+	 * 선택범위 방향 얻기 (`LTR` 또는 `RTL`).
 	 */
 	public getDirection(): SelectionDirection {
 		if (this.selectionStartLineNumber === this.startLineNumber && this.selectionStartColumn === this.startColumn) {
@@ -112,7 +120,9 @@ export class Selection extends Range {
 	}
 
 	/**
-	 * Create a new selection with a different `positionLineNumber` and `positionColumn`.
+	 * 새로운 Selection 반환
+	 *
+	 * 선택 시작 지점은 같고, 종료 지점(`positionLineNumber`, `positionColumn`)이 다른 새로운 선택범위
 	 */
 	public override setEndPosition(endLineNumber: number, endColumn: number): Selection {
 		if (this.getDirection() === SelectionDirection.LTR) {
@@ -122,20 +132,22 @@ export class Selection extends Range {
 	}
 
 	/**
-	 * Get the position at `positionLineNumber` and `positionColumn`.
+	 * 선택 종료 지점(`positionLineNumber`, `positionColumn`) 얻기
 	 */
 	public getPosition(): Position {
 		return new Position(this.positionLineNumber, this.positionColumn);
 	}
 
 	/**
-	 * Get the position at the start of the selection.
-	*/
+	 * 선택 시작 지점 얻기
+	 */
 	public getSelectionStart(): Position {
 		return new Position(this.selectionStartLineNumber, this.selectionStartColumn);
 	}
 
 	/**
+	 * 새로운 Selection 반환
+	 *
 	 * Create a new selection with a different `selectionStartLineNumber` and `selectionStartColumn`.
 	 */
 	public override setStartPosition(startLineNumber: number, startColumn: number): Selection {
@@ -148,6 +160,8 @@ export class Selection extends Range {
 	// ----
 
 	/**
+	 * 새로운 Selection 반환
+	 *
 	 * Create a `Selection` from one or two positions
 	 */
 	public static override fromPositions(start: IPosition, end: IPosition = start): Selection {
@@ -155,6 +169,8 @@ export class Selection extends Range {
 	}
 
 	/**
+	 * 새로운 Selection 반환
+	 *
 	 * Creates a `Selection` from a range, given a direction.
 	 */
 	public static fromRange(range: Range, direction: SelectionDirection): Selection {
@@ -166,14 +182,14 @@ export class Selection extends Range {
 	}
 
 	/**
-	 * Create a `Selection` from an `ISelection`.
+	 * `ISelection`으로부터 `Selection` 만들기
 	 */
 	public static liftSelection(sel: ISelection): Selection {
 		return new Selection(sel.selectionStartLineNumber, sel.selectionStartColumn, sel.positionLineNumber, sel.positionColumn);
 	}
 
 	/**
-	 * `a` equals `b`.
+	 * 두 선택범위 배열 `a`와 `b`가 동일한지 체크
 	 */
 	public static selectionsArrEqual(a: ISelection[], b: ISelection[]): boolean {
 		if (a && !b || !a && b) {
@@ -194,7 +210,7 @@ export class Selection extends Range {
 	}
 
 	/**
-	 * Test if `obj` is an `ISelection`.
+	 * `obj`가 `ISelection`인지 체크
 	 */
 	public static isISelection(obj: any): obj is ISelection {
 		return (
@@ -207,7 +223,8 @@ export class Selection extends Range {
 	}
 
 	/**
-	 * Create with a direction.
+	 * 새로운 Selection 반환
+	 * - 선택 방향도 지정함
 	 */
 	public static createWithDirection(startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number, direction: SelectionDirection): Selection {
 

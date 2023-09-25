@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export class LineRange
+ * export type ISerializedLineRange
  *--------------------------------------------------------------------------------------------*/
 
 import { BugIndicatingError } from 'vs/base/common/errors';
@@ -11,20 +16,24 @@ import { Range } from 'vs/editor/common/core/range';
  * A range of lines (1-based).
  */
 export class LineRange {
+	/** `Range` 받아서 새로운 `LineRange` 만들기  */
 	public static fromRange(range: Range): LineRange {
 		return new LineRange(range.startLineNumber, range.endLineNumber);
 	}
 
+	/** `a` 범위에서 `b` 범위 빼기  */
 	public static subtract(a: LineRange, b: LineRange | undefined): LineRange[] {
 		if (!b) {
 			return [a];
 		}
 		if (a.startLineNumber < b.startLineNumber && b.endLineNumberExclusive < a.endLineNumberExclusive) {
+			// b가 a에 포함되는 경우
 			return [
 				new LineRange(a.startLineNumber, b.startLineNumber),
 				new LineRange(b.endLineNumberExclusive, a.endLineNumberExclusive)
 			];
 		} else if (b.startLineNumber <= a.startLineNumber && a.endLineNumberExclusive <= b.endLineNumberExclusive) {
+			// a가 b에 포함되는 경우
 			return [];
 		} else if (b.endLineNumberExclusive < a.endLineNumberExclusive) {
 			return [new LineRange(Math.max(b.endLineNumberExclusive, a.startLineNumber), a.endLineNumberExclusive)];
@@ -34,7 +43,8 @@ export class LineRange {
 	}
 
 	/**
-	 * @param lineRanges An array of sorted line ranges.
+	 * 여러개의 LineRange 배열들을 하나로 합치기
+	 * @param lineRanges 정렬된 line range 배열
 	 */
 	public static joinMany(lineRanges: readonly (readonly LineRange[])[]): readonly LineRange[] {
 		if (lineRanges.length === 0) {
@@ -48,8 +58,9 @@ export class LineRange {
 	}
 
 	/**
-	 * @param lineRanges1 Must be sorted.
-	 * @param lineRanges2 Must be sorted.
+	 * 두 LineRange 배열을 하나로 합치기
+	 * @param lineRanges1 반드시 정렬(sort)되어 있어야 함
+	 * @param lineRanges2 반드시 정렬(sort)되어 있어야 함
 	 */
 	public static join(lineRanges1: readonly LineRange[], lineRanges2: readonly LineRange[]): readonly LineRange[] {
 		if (lineRanges1.length === 0) {
@@ -114,15 +125,16 @@ export class LineRange {
 	}
 
 	/**
-	 * The start line number.
+	 * 시작 line 번호
 	 */
 	public readonly startLineNumber: number;
 
 	/**
-	 * The end line number (exclusive).
+	 * 마지막 line 번호 (exclusive).
 	 */
 	public readonly endLineNumberExclusive: number;
 
+	// 생성자
 	constructor(
 		startLineNumber: number,
 		endLineNumberExclusive: number,
@@ -249,5 +261,6 @@ export class LineRange {
 		return new OffsetRange(this.startLineNumber - 1, this.endLineNumberExclusive - 1);
 	}
 }
+
 
 export type ISerializedLineRange = [startLineNumber: number, endLineNumberExclusive: number];

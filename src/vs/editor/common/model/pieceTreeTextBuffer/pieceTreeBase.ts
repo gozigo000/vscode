@@ -1,6 +1,14 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요] export
+ * export function createLineStartsFast
+ * export function createLineStarts
+ * export class Piece
+ * export class StringBuffer
+[*]export class PieceTreeBase
  *--------------------------------------------------------------------------------------------*/
 
 import { CharCode } from 'vs/base/common/charCode';
@@ -34,6 +42,11 @@ class LineStarts {
 	) { }
 }
 
+/**
+ * 아래 내용을 담은 배열 반환
+ * - 읽기전용이면, `str`에 있는 줄(line)의 시작 위치를 담은 `Uint16Array(또는 Uint32Array)` (0부터 시작)
+ * - 읽기전용이 아니면, `str`에 있는 줄(line)의 시작 위치를 담은 `숫자 배열` (0부터 시작)
+ */
 export function createLineStartsFast(str: string, readonly: boolean = true): Uint32Array | Uint16Array | number[] {
 	const r: number[] = [0];
 	let rLength = 1;
@@ -42,15 +55,17 @@ export function createLineStartsFast(str: string, readonly: boolean = true): Uin
 		const chr = str.charCodeAt(i);
 
 		if (chr === CharCode.CarriageReturn) {
+			// "\r..."인 경우
 			if (i + 1 < len && str.charCodeAt(i + 1) === CharCode.LineFeed) {
-				// \r\n... case
+				// "\r\n..."인 경우
 				r[rLength++] = i + 2;
-				i++; // skip \n
+				i++; // '\n' 스킵하기
 			} else {
-				// \r... case
+				// "\r..."인 경우
 				r[rLength++] = i + 1;
 			}
 		} else if (chr === CharCode.LineFeed) {
+			// "\f..."인 경우
 			r[rLength++] = i + 1;
 		}
 	}
@@ -61,30 +76,39 @@ export function createLineStartsFast(str: string, readonly: boolean = true): Uin
 	}
 }
 
+/**
+ * 아래 내용을 담은 인스턴스 반환
+ * - `str`에 있는 줄(line)의 시작 위치를 담은 Uint16Array(또는 Uint32Array) (0부터 시작)
+ * - 줄바꿈 문자의 종류와 갯수
+ * - 기본 아스키 문자로만 이루졌는지 여부
+ */
 export function createLineStarts(r: number[], str: string): LineStarts {
 	r.length = 0;
 	r[0] = 0;
-	let rLength = 1;
-	let cr = 0, lf = 0, crlf = 0;
-	let isBasicASCII = true;
+	let rLength = 1; // 줄(line) 갯수
+	let cr = 0, lf = 0, crlf = 0; // 줄바꿈 문자별로 갯수 셈
+	let isBasicASCII = true; // BasicASCII: 알파벳, 숫자, 특수문자(!?[]...)
 	for (let i = 0, len = str.length; i < len; i++) {
 		const chr = str.charCodeAt(i);
 
 		if (chr === CharCode.CarriageReturn) {
+			// "\r..."인 경우
 			if (i + 1 < len && str.charCodeAt(i + 1) === CharCode.LineFeed) {
-				// \r\n... case
+				// "\r\n..."인 경우
 				crlf++;
 				r[rLength++] = i + 2;
-				i++; // skip \n
+				i++; // '\n' 스킵하기
 			} else {
+				// "\r..."인 경우
 				cr++;
-				// \r... case
 				r[rLength++] = i + 1;
 			}
 		} else if (chr === CharCode.LineFeed) {
+			// "\f..."인 경우
 			lf++;
 			r[rLength++] = i + 1;
 		} else {
+			// 일반 문자인 경우
 			if (isBasicASCII) {
 				if (chr !== CharCode.Tab && (chr < 32 || chr > 126)) {
 					isBasicASCII = false;
@@ -108,22 +132,31 @@ interface NodePosition {
 	*/
 	remainder: number;
 	/**
-	 * node start offset in document.
+	 * 문서에서 노드의 시작 오프셋
 	 */
 	nodeStartOffset: number;
 }
-
+/** 버퍼 커서 위치 */
 interface BufferCursor {
 	/**
-	 * Line number in current buffer
+	 * 현재 버퍼에서 line 번호
 	 */
 	line: number;
 	/**
-	 * Column number in current buffer
+	 * 현재 버퍼에서 column 번호
 	 */
 	column: number;
 }
 
+/**
+ * 조각
+ *
+ * -`bufferIndex`: number; - 이 조각과 대응하는 버퍼 배열 원소의 인덱스 \
+ * -`start`: BufferCursor; \
+ * -`end`: BufferCursor; \
+ * -`lineFeedCnt`: number; - 줄바꿈 문자 갯수 \
+ * -`length`: number; - `start`부터 `end`까지 문자열의 길이
+ */
 export class Piece {
 	readonly bufferIndex: number;
 	readonly start: BufferCursor;
@@ -140,6 +173,12 @@ export class Piece {
 	}
 }
 
+/**
+ * 문자열 버퍼
+ *
+ * -buffer: 문자열 덩어리(chunk) \
+ * -lineStarts: 줄(line) 시작 위치s (0부터 시작)
+ */
 export class StringBuffer {
 	buffer: string;
 	lineStarts: Uint32Array | Uint16Array | number[];
@@ -200,39 +239,45 @@ class PieceTreeSnapshot implements ITextSnapshot {
 
 interface CacheEntry {
 	node: TreeNode;
-	nodeStartOffset: number;
-	nodeStartLineNumber?: number;
+	nodeStartOffset: number; // 문서에서 노드가 가진 문자열의 시작 위치?
+	nodeStartLineNumber?: number; // 문서에서 노드가 가진 문자열이 시작하는 줄 번호?
 }
 
+/** 조각 트리 검색 캐시? */
 class PieceTreeSearchCache {
-	private readonly _limit: number;
+	private readonly _limit: number; // 캐시 크기
 	private _cache: CacheEntry[];
 
+	// 생성자
 	constructor(limit: number) {
 		this._limit = limit;
 		this._cache = [];
 	}
 
+	/** 문서에서 `offset` 위치를 담당하는 `CacheEntry` 반환? */
 	public get(offset: number): CacheEntry | null {
 		for (let i = this._cache.length - 1; i >= 0; i--) {
 			const nodePos = this._cache[i];
-			if (nodePos.nodeStartOffset <= offset && nodePos.nodeStartOffset + nodePos.node.piece.length >= offset) {
+			if (nodePos.nodeStartOffset <= offset && offset <= nodePos.nodeStartOffset + nodePos.node.piece.length) {
 				return nodePos;
 			}
 		}
 		return null;
 	}
 
+	/** 문서에서 `lineNumber`번째 줄을 담당하는 `CacheEntry` 반환? */
 	public get2(lineNumber: number): { node: TreeNode; nodeStartOffset: number; nodeStartLineNumber: number } | null {
 		for (let i = this._cache.length - 1; i >= 0; i--) {
 			const nodePos = this._cache[i];
-			if (nodePos.nodeStartLineNumber && nodePos.nodeStartLineNumber < lineNumber && nodePos.nodeStartLineNumber + nodePos.node.piece.lineFeedCnt >= lineNumber) {
-				return <{ node: TreeNode; nodeStartOffset: number; nodeStartLineNumber: number }>nodePos;
+			if (nodePos.nodeStartLineNumber
+				&& nodePos.nodeStartLineNumber < lineNumber && lineNumber <= nodePos.nodeStartLineNumber + nodePos.node.piece.lineFeedCnt) {
+				return <{ node: TreeNode; nodeStartOffset: number; nodeStartLineNumber: number }>nodePos; // 참고: 타입 표명 https://radlohead.gitbook.io/typescript-deep-dive/type-system/type-assertion
 			}
 		}
 		return null;
 	}
 
+	/** 캐시에 `CacheEntry` 추가 */
 	public set(nodePosition: CacheEntry) {
 		if (this._cache.length >= this._limit) {
 			this._cache.shift();
@@ -240,6 +285,7 @@ class PieceTreeSearchCache {
 		this._cache.push(nodePosition);
 	}
 
+	/** 부모 노드가 없거나, `offset`보다 뒤에서 시작하는 `CacheEntry`는 캐시에서 제거하기? */
 	public validate(offset: number) {
 		let hasInvalidVal = false;
 		const tmp: Array<CacheEntry | null> = this._cache;
@@ -265,6 +311,7 @@ class PieceTreeSearchCache {
 	}
 }
 
+/** 조각 트리 심은 곳 */
 export class PieceTreeBase {
 	root!: TreeNode;
 	protected _buffers!: StringBuffer[]; // 0 is change buffer, others are readonly original buffer.
@@ -277,33 +324,43 @@ export class PieceTreeBase {
 	private _searchCache!: PieceTreeSearchCache;
 	private _lastVisitedLine!: { lineNumber: number; value: string };
 
+	// 생성자
 	constructor(chunks: StringBuffer[], eol: '\r\n' | '\n', eolNormalized: boolean) {
 		this.create(chunks, eol, eolNormalized);
 	}
 
+	/** 조각 트리 만들기 및 기본 세팅하기 */
 	create(chunks: StringBuffer[], eol: '\r\n' | '\n', eolNormalized: boolean) {
+		this.root = SENTINEL;
 		this._buffers = [
 			new StringBuffer('', [0])
 		];
-		this._lastChangeBufferPos = { line: 0, column: 0 };
-		this.root = SENTINEL;
 		this._lineCnt = 1;
 		this._length = 0;
 		this._EOL = eol;
 		this._EOLLength = eol.length;
 		this._EOLNormalized = eolNormalized;
+		this._lastChangeBufferPos = { line: 0, column: 0 };
 
+		// 조각 트리 만들기
 		let lastNode: TreeNode | null = null;
 		for (let i = 0, len = chunks.length; i < len; i++) {
 			if (chunks[i].buffer.length > 0) {
 				if (!chunks[i].lineStarts) {
+					// lineStarts 배열이 없는 덩어리들은 lineStarts 배열 만들어주기
 					chunks[i].lineStarts = createLineStartsFast(chunks[i].buffer);
 				}
 
 				const piece = new Piece(
 					i + 1,
-					{ line: 0, column: 0 },
-					{ line: chunks[i].lineStarts.length - 1, column: chunks[i].buffer.length - chunks[i].lineStarts[chunks[i].lineStarts.length - 1] },
+					{
+						line: 0,
+						column: 0
+					},
+					{
+						line: chunks[i].lineStarts.length - 1,
+						column: chunks[i].buffer.length - chunks[i].lineStarts[chunks[i].lineStarts.length - 1]
+					},
 					chunks[i].lineStarts.length - 1,
 					chunks[i].buffer.length
 				);
@@ -317,6 +374,7 @@ export class PieceTreeBase {
 		this.computeBufferMetadata();
 	}
 
+	/** 줄바꿈 문자 정리하기 */
 	normalizeEOL(eol: '\r\n' | '\n') {
 		const averageBufferSize = AverageBufferSize;
 		const min = averageBufferSize - Math.floor(averageBufferSize / 3);
@@ -351,7 +409,7 @@ export class PieceTreeBase {
 		this.create(chunks, eol, true);
 	}
 
-	// #region Buffer API
+	// #region 버퍼 API
 	public getEOL(): '\r\n' | '\n' {
 		return this._EOL;
 	}
@@ -366,6 +424,7 @@ export class PieceTreeBase {
 		return new PieceTreeSnapshot(this, BOM);
 	}
 
+	/** 두 조각 트리에 담긴 버퍼 문자열들이 동일한지 체크 */
 	public equal(other: PieceTreeBase): boolean {
 		if (this.getLength() !== other.getLength()) {
 			return false;
@@ -392,15 +451,16 @@ export class PieceTreeBase {
 		return ret;
 	}
 
+	/** 문서에서 `(lineNumber, column)` 위치의 `offset` 반환 */
 	public getOffsetAt(lineNumber: number, column: number): number {
-		let leftLen = 0; // inorder
+		let leftLen = 0; // inorder, 오프셋 계산용
 
 		let x = this.root;
 
 		while (x !== SENTINEL) {
-			if (x.left !== SENTINEL && x.lf_left + 1 >= lineNumber) {
+			if (x.left !== SENTINEL && lineNumber <= x.lf_left + 1) {
 				x = x.left;
-			} else if (x.lf_left + x.piece.lineFeedCnt + 1 >= lineNumber) {
+			} else if (lineNumber <= x.lf_left + x.piece.lineFeedCnt + 1) {
 				leftLen += x.size_left;
 				// lineNumber >= 2
 				const accumualtedValInCurrentIndex = this.getAccumulatedValue(x, lineNumber - x.lf_left - 2);
@@ -415,6 +475,7 @@ export class PieceTreeBase {
 		return leftLen;
 	}
 
+	/** 문서에서 `offset` 위치의 좌표(`Position`) 반환 */
 	public getPositionAt(offset: number): Position {
 		offset = Math.floor(offset);
 		offset = Math.max(0, offset);
@@ -424,9 +485,9 @@ export class PieceTreeBase {
 		const originalOffset = offset;
 
 		while (x !== SENTINEL) {
-			if (x.size_left !== 0 && x.size_left >= offset) {
+			if (x.size_left !== 0 && offset <= x.size_left) {
 				x = x.left;
-			} else if (x.size_left + x.piece.length >= offset) {
+			} else if (offset <= x.size_left + x.piece.length) {
 				const out = this.getIndexOf(x, offset - x.size_left);
 
 				lfCnt += x.lf_left + out.index;
@@ -443,7 +504,7 @@ export class PieceTreeBase {
 				lfCnt += x.lf_left + x.piece.lineFeedCnt;
 
 				if (x.right === SENTINEL) {
-					// last node
+					// 마지막 노드인 경우
 					const lineStartOffset = this.getOffsetAt(lfCnt + 1, 1);
 					const column = originalOffset - offset - lineStartOffset;
 					return new Position(lfCnt + 1, column + 1);
@@ -456,6 +517,7 @@ export class PieceTreeBase {
 		return new Position(1, 1);
 	}
 
+	/** `range` 범위의 버퍼 문자열 반환 */
 	public getValueInRange(range: Range, eol?: string): string {
 		if (range.startLineNumber === range.endLineNumber && range.startColumn === range.endColumn) {
 			return '';
@@ -481,8 +543,10 @@ export class PieceTreeBase {
 		return value;
 	}
 
+	/** `startPosition`부터 `endPosition`까지의 버퍼 문자열 반환 */
 	public getValueInRange2(startPosition: NodePosition, endPosition: NodePosition): string {
 		if (startPosition.node === endPosition.node) {
+			// 문자열이 하나의 노드에 다 들어있는 경우
 			const node = startPosition.node;
 			const buffer = this._buffers[node.piece.bufferIndex].buffer;
 			const startOffset = this.offsetInBuffer(node.piece.bufferIndex, node.piece.start);
@@ -610,6 +674,7 @@ export class PieceTreeBase {
 		return this._lineCnt;
 	}
 
+	/** `lineNumber`번째 줄의 문자열 반환 (줄바꿈 문자는 제거해줌) */
 	public getLineContent(lineNumber: number): string {
 		if (this._lastVisitedLine.lineNumber === lineNumber) {
 			return this._lastVisitedLine.value;
@@ -628,9 +693,10 @@ export class PieceTreeBase {
 		return this._lastVisitedLine.value;
 	}
 
+	/**  */
 	private _getCharCode(nodePos: NodePosition): number {
 		if (nodePos.remainder === nodePos.node.piece.length) {
-			// the char we want to fetch is at the head of next node.
+			// 우리가 가져오고 싶은 char가 다음 노드의 선두에 있는 경우
 			const matchingNode = nodePos.node.next();
 			if (!matchingNode) {
 				return 0;
@@ -648,11 +714,13 @@ export class PieceTreeBase {
 		}
 	}
 
+	/** `(lineNumber, index)` 위치에 있는 문자의 CharCode 반환 */
 	public getLineCharCode(lineNumber: number, index: number): number {
 		const nodePos = this.nodeAt2(lineNumber, index + 1);
 		return this._getCharCode(nodePos);
 	}
 
+	/** `lineNumber`번째 줄 문자열의 길이 반환 */
 	public getLineLength(lineNumber: number): number {
 		if (lineNumber === this.getLineCount()) {
 			const startOffset = this.getOffsetAt(lineNumber, 1);
@@ -661,12 +729,27 @@ export class PieceTreeBase {
 		return this.getOffsetAt(lineNumber + 1, 1) - this.getOffsetAt(lineNumber, 1) - this._EOLLength;
 	}
 
+	/** `offset` 위치에 있는 문자의 CharCode 반환 */
 	public getCharCode(offset: number): number {
 		const nodePos = this.nodeAt(offset);
 		return this._getCharCode(nodePos);
 	}
 
-	public findMatchesInNode(node: TreeNode, searcher: Searcher, startLineNumber: number, startColumn: number, startCursor: BufferCursor, endCursor: BufferCursor, searchData: SearchData, captureMatches: boolean, limitResultCount: number, resultLen: number, result: FindMatch[]) {
+	/**
+	 * 노드에서 검색하기
+	 * - 일치 횟수 반환
+	 */
+	public findMatchesInNode(
+		node: TreeNode,
+		searcher: Searcher,
+		startLineNumber: number, startColumn: number,
+		startCursor: BufferCursor, endCursor: BufferCursor,
+		searchData: SearchData,
+		captureMatches: boolean,
+		limitResultCount: number, // 검색 일치 횟수 상한
+		resultLen: number, // 검색 일치 횟수
+		result: FindMatch[]
+	) {
 		const buffer = this._buffers[node.piece.bufferIndex];
 		const startOffsetInBuffer = this.offsetInBuffer(node.piece.bufferIndex, node.piece.start);
 		const start = this.offsetInBuffer(node.piece.bufferIndex, startCursor);
@@ -697,7 +780,7 @@ export class PieceTreeBase {
 				}
 				this.positionInBuffer(node, offsetInBuffer(m.index) - startOffsetInBuffer, ret);
 				const lineFeedCnt = this.getLineFeedCnt(node.piece.bufferIndex, startCursor, ret);
-				const retStartColumn = ret.line === startCursor.line ? ret.column - startCursor.column + startColumn : ret.column + 1;
+				const retStartColumn = (ret.line === startCursor.line) ? (ret.column - startCursor.column + startColumn) : (ret.column + 1);
 				const retEndColumn = retStartColumn + m[0].length;
 				result[resultLen++] = createFindMatch(new Range(startLineNumber + lineFeedCnt, retStartColumn, startLineNumber + lineFeedCnt, retEndColumn), m, captureMatches);
 
@@ -714,7 +797,13 @@ export class PieceTreeBase {
 		return resultLen;
 	}
 
-	public findMatchesLineByLine(searchRange: Range, searchData: SearchData, captureMatches: boolean, limitResultCount: number): FindMatch[] {
+	/**  */
+	public findMatchesLineByLine(
+		searchRange: Range,
+		searchData: SearchData,
+		captureMatches: boolean,
+		limitResultCount: number
+	): FindMatch[] {
 		const result: FindMatch[] = [];
 		let resultLen = 0;
 		const searcher = new Searcher(searchData.wordSeparators, searchData.regex);
@@ -777,18 +866,29 @@ export class PieceTreeBase {
 		}
 
 		if (startLineNumber === searchRange.endLineNumber) {
-			const startColumn = startLineNumber === searchRange.startLineNumber ? searchRange.startColumn - 1 : 0;
+			const startColumn = (startLineNumber === searchRange.startLineNumber) ? searchRange.startColumn - 1 : 0;
 			const text = this.getLineContent(startLineNumber).substring(startColumn, searchRange.endColumn - 1);
 			resultLen = this._findMatchesInLine(searchData, searcher, text, searchRange.endLineNumber, startColumn, resultLen, result, captureMatches, limitResultCount);
 			return result;
 		}
 
-		const startColumn = startLineNumber === searchRange.startLineNumber ? searchRange.startColumn : 1;
+		const startColumn = (startLineNumber === searchRange.startLineNumber) ? searchRange.startColumn : 1;
 		resultLen = this.findMatchesInNode(endPosition.node, searcher, startLineNumber, startColumn, start, end, searchData, captureMatches, limitResultCount, resultLen, result);
 		return result;
 	}
 
-	private _findMatchesInLine(searchData: SearchData, searcher: Searcher, text: string, lineNumber: number, deltaOffset: number, resultLen: number, result: FindMatch[], captureMatches: boolean, limitResultCount: number): number {
+	/**  */
+	private _findMatchesInLine(
+		searchData: SearchData,
+		searcher: Searcher,
+		text: string,
+		lineNumber: number,
+		deltaOffset: number,
+		resultLen: number,
+		result: FindMatch[],
+		captureMatches: boolean,
+		limitResultCount: number
+	): number {
 		const wordSeparators = searchData.wordSeparators;
 		if (!captureMatches && searchData.simpleSearch) {
 			const searchString = searchData.simpleSearch;
@@ -824,7 +924,8 @@ export class PieceTreeBase {
 
 	// #endregion
 
-	// #region Piece Table
+	// #region 조각 테이블 (Piece Table)
+	/** `offset` 위치에 문자열 `value` 삽입하기 */
 	public insert(offset: number, value: string, eolNormalized: boolean = false): void {
 		this._EOLNormalized = this._EOLNormalized && eolNormalized;
 		this._lastVisitedLine.lineNumber = 0;
@@ -838,7 +939,7 @@ export class PieceTreeBase {
 			if (node.piece.bufferIndex === 0 &&
 				piece.end.line === this._lastChangeBufferPos.line &&
 				piece.end.column === this._lastChangeBufferPos.column &&
-				(nodeStartOffset + piece.length === offset) &&
+				(offset === nodeStartOffset + piece.length) &&
 				value.length < AverageBufferSize
 			) {
 				// changed buffer
@@ -847,10 +948,10 @@ export class PieceTreeBase {
 				return;
 			}
 
-			if (nodeStartOffset === offset) {
+			if (offset === nodeStartOffset) {
 				this.insertContentToNodeLeft(value, node);
 				this._searchCache.validate(offset);
-			} else if (nodeStartOffset + node.piece.length > offset) {
+			} else if (offset < nodeStartOffset + node.piece.length) {
 				// we are inserting into the middle of a node.
 				const nodesToDel: TreeNode[] = [];
 				let newRightPiece = new Piece(
@@ -896,11 +997,11 @@ export class PieceTreeBase {
 					this.deleteNodeTail(node, insertPosInBuffer);
 				}
 
-				const newPieces = this.createNewPieces(value);
+				const newPieces = this.createNewPieces(value); // 삽입 문자열에 대한 조각들
 				if (newRightPiece.length > 0) {
 					this.rbInsertRight(node, newRightPiece);
 				}
-
+				// 삽입 문자열에 대한 조각들 삽입
 				let tmpNode = node;
 				for (let k = 0; k < newPieces.length; k++) {
 					tmpNode = this.rbInsertRight(tmpNode, newPieces[k]);
@@ -910,7 +1011,7 @@ export class PieceTreeBase {
 				this.insertContentToNodeRight(value, node);
 			}
 		} else {
-			// insert new node
+			// 빈 트리이면 새 노드 삽입
 			const pieces = this.createNewPieces(value);
 			let node = this.rbInsertLeft(null, pieces[0]);
 
@@ -923,6 +1024,7 @@ export class PieceTreeBase {
 		this.computeBufferMetadata();
 	}
 
+	/** `offset` 위치부터 문자 `cnt`개 삭제하기  */
 	public delete(offset: number, cnt: number): void {
 		this._lastVisitedLine.lineNumber = 0;
 		this._lastVisitedLine.value = '';
@@ -940,8 +1042,9 @@ export class PieceTreeBase {
 			const startSplitPosInBuffer = this.positionInBuffer(startNode, startPosition.remainder);
 			const endSplitPosInBuffer = this.positionInBuffer(startNode, endPosition.remainder);
 
-			if (startPosition.nodeStartOffset === offset) {
-				if (cnt === startNode.piece.length) { // delete node
+			if (offset === startPosition.nodeStartOffset) {
+				if (cnt === startNode.piece.length) {
+					// delete node
 					const next = startNode.next();
 					rbDelete(this, startNode);
 					this.validateCRLFWithPrevNode(next);
@@ -955,7 +1058,7 @@ export class PieceTreeBase {
 				return;
 			}
 
-			if (startPosition.nodeStartOffset + startNode.piece.length === offset + cnt) {
+			if (offset + cnt === startPosition.nodeStartOffset + startNode.piece.length) {
 				this.deleteNodeTail(startNode, startSplitPosInBuffer);
 				this.validateCRLFWithNextNode(startNode);
 				this.computeBufferMetadata();
@@ -984,13 +1087,13 @@ export class PieceTreeBase {
 			nodesToDel.push(endNode);
 		}
 
-		// delete nodes in between
+		// 사이에 있는 노드들 제거
 		const secondNode = startNode.next();
 		for (let node = secondNode; node !== SENTINEL && node !== endNode; node = node.next()) {
 			nodesToDel.push(node);
 		}
 
-		const prev = startNode.piece.length === 0 ? startNode.prev() : startNode;
+		const prev = (startNode.piece.length === 0) ? startNode.prev() : startNode;
 		this.deleteNodes(nodesToDel);
 		this.validateCRLFWithNextNode(prev);
 		this.computeBufferMetadata();
@@ -1129,6 +1232,7 @@ export class PieceTreeBase {
 		}
 	}
 
+	/**  */
 	private offsetInBuffer(bufferIndex: number, cursor: BufferCursor): number {
 		const lineStarts = this._buffers[bufferIndex].lineStarts;
 		return lineStarts[cursor.line] + cursor.column;
@@ -1140,16 +1244,17 @@ export class PieceTreeBase {
 		}
 	}
 
+	/** `text`를 담은 새로운 조각들 만들기 */
 	private createNewPieces(text: string): Piece[] {
 		if (text.length > AverageBufferSize) {
-			// the content is large, operations like substring, charCode becomes slow
-			// so here we split it into smaller chunks, just like what we did for CR/LF normalization
+			// 문자열이 너무 길면 substring, charCode 같은 작업들이 느려집니다.
+			// 따라서 문자열을 여러개의 덩어리로 나눕니다, just like what we did for CR/LF normalization
 			const newPieces: Piece[] = [];
 			while (text.length > AverageBufferSize) {
 				const lastChar = text.charCodeAt(AverageBufferSize - 1);
 				let splitText;
 				if (lastChar === CharCode.CarriageReturn || (lastChar >= 0xD800 && lastChar <= 0xDBFF)) {
-					// last character is \r or a high surrogate => keep it back
+					// last character is '\r' or a high surrogate => keep it back
 					splitText = text.substring(0, AverageBufferSize - 1);
 					text = text.substring(AverageBufferSize - 1);
 				} else {
@@ -1180,6 +1285,8 @@ export class PieceTreeBase {
 
 			return newPieces;
 		}
+
+		// 문자열이 길지 않은 경우
 
 		let startOffset = this._buffers[0].buffer.length;
 		const lineStarts = createLineStartsFast(text, false);
@@ -1225,10 +1332,12 @@ export class PieceTreeBase {
 		return [newPiece];
 	}
 
+	/** 조각 트리의 모든 문자열 반환 */
 	public getLinesRawContent(): string {
 		return this.getContentOfSubTree(this.root);
 	}
 
+	/**  */
 	public getLineRawContent(lineNumber: number, endOffset: number = 0): string {
 		let x = this.root;
 
@@ -1318,13 +1427,14 @@ export class PieceTreeBase {
 		this._searchCache.validate(this._length);
 	}
 
-	// #region node operations
+	// #region 조각 테이블 - 노드 작업s
+	/** 버퍼 내 `accumulatedValue`(오프셋) 위치의 좌표 반환  */
 	private getIndexOf(node: TreeNode, accumulatedValue: number): { index: number; remainder: number } {
 		const piece = node.piece;
 		const pos = this.positionInBuffer(node, accumulatedValue);
 		const lineCnt = pos.line - piece.start.line;
 
-		if (this.offsetInBuffer(piece.bufferIndex, piece.end) - this.offsetInBuffer(piece.bufferIndex, piece.start) === accumulatedValue) {
+		if (accumulatedValue === this.offsetInBuffer(piece.bufferIndex, piece.end) - this.offsetInBuffer(piece.bufferIndex, piece.start)) {
 			// we are checking the end of this node, so a CRLF check is necessary.
 			const realLineCnt = this.getLineFeedCnt(node.piece.bufferIndex, piece.start, pos);
 			if (realLineCnt !== lineCnt) {
@@ -1336,6 +1446,7 @@ export class PieceTreeBase {
 		return { index: lineCnt, remainder: pos.column };
 	}
 
+	/**  */
 	private getAccumulatedValue(node: TreeNode, index: number) {
 		if (index < 0) {
 			return 0;
@@ -1396,6 +1507,10 @@ export class PieceTreeBase {
 		updateTreeMetadata(this, node, size_delta, lf_delta);
 	}
 
+	/**
+	 * 노드 중간에 있는 내용 삭제하기
+	 * - 두 개의 노드로 분리됨
+	 */
 	private shrinkNode(node: TreeNode, start: BufferCursor, end: BufferCursor) {
 		const piece = node.piece;
 		const originalStartPos = piece.start;
@@ -1506,6 +1621,7 @@ export class PieceTreeBase {
 		return null!;
 	}
 
+	/**  */
 	private nodeAt2(lineNumber: number, column: number): NodePosition {
 		let x = this.root;
 		let nodeStartOffset = 0;
@@ -1600,7 +1716,7 @@ export class PieceTreeBase {
 
 	// #endregion
 
-	// #region CRLF
+	// #region 조각 테이블 - CRLF
 	private shouldCheckCRLF() {
 		return !(this._EOLNormalized && this._EOL === '\n');
 	}
@@ -1750,7 +1866,8 @@ export class PieceTreeBase {
 
 	// #endregion
 
-	// #region Tree operations
+	// #region 트리 작업s
+	/** 중위순회하면서 콜백함수 실행? */
 	iterate(node: TreeNode, callback: (node: TreeNode) => boolean): boolean {
 		if (node === SENTINEL) {
 			return callback(SENTINEL);
@@ -1764,6 +1881,7 @@ export class PieceTreeBase {
 		return callback(node) && this.iterate(node.right, callback);
 	}
 
+	/** 노드가 담당하는 문자열 얻기 */
 	private getNodeContent(node: TreeNode) {
 		if (node === SENTINEL) {
 			return '';
@@ -1776,6 +1894,7 @@ export class PieceTreeBase {
 		return currentContent;
 	}
 
+	/** 조각이 담당하는 문자열 얻기 */
 	getPieceContent(piece: Piece) {
 		const buffer = this._buffers[piece.bufferIndex];
 		const startOffset = this.offsetInBuffer(piece.bufferIndex, piece.start);
@@ -1785,11 +1904,15 @@ export class PieceTreeBase {
 	}
 
 	/**
-	 *      node              node
-	 *     /  \              /  \
-	 *    a   b    <----   a    b
+	 *      node             node
+	 *     /  \    ---->    /  \
+	 *    a                a    z (삽입하는 노드)
+	 *
+	 *      node             node
+	 *     /  \             /  \
+	 *    a    b   ---->   a    b
 	 *                         /
-	 *                        z
+	 *                        z (삽입하는 노드)
 	 */
 	private rbInsertRight(node: TreeNode | null, p: Piece): TreeNode {
 		const z = new TreeNode(p, NodeColor.Red);
@@ -1817,11 +1940,15 @@ export class PieceTreeBase {
 	}
 
 	/**
+	 * 	  node              node
+	 *     /  \     ---->    /  \
+	 *         b            z    b
+	 *
 	 *      node              node
 	 *     /  \              /  \
-	 *    a   b     ---->   a    b
+	 *    a    b    ---->   a    b
 	 *                       \
-	 *                        z
+	 *                        z (삽입하는 노드)
 	 */
 	private rbInsertLeft(node: TreeNode | null, p: Piece): TreeNode {
 		const z = new TreeNode(p, NodeColor.Red);

@@ -3,89 +3,96 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [개요]
+ * export const enum CharCode
+ */
+
 // Names from https://blog.codinghorror.com/ascii-pronunciation-rules-for-programmers/
 
 /**
- * An inlined enum containing useful character codes (to be used with String.charCodeAt).
- * Please leave the const keyword such that it gets inlined when compiled to JavaScript!
+ * 유용한 문자 코드s
+ *
+ * - 아키스코드, 유니코드
+ * - (String.charCodeAt이랑 사용하려고 만듬)
  */
 export const enum CharCode {
 	Null = 0,
 	/**
-	 * The `\b` character.
+	 * `\b` 문자
 	 */
 	Backspace = 8,
 	/**
-	 * The `\t` character.
+	 * `\t` 문자
 	 */
 	Tab = 9,
 	/**
-	 * The `\n` character.
+	 * `\n` 문자
 	 */
 	LineFeed = 10,
 	/**
-	 * The `\r` character.
+	 * `\r` 문자
 	 */
 	CarriageReturn = 13,
 	Space = 32,
 	/**
-	 * The `!` character.
+	 * `!` 문자
 	 */
 	ExclamationMark = 33,
 	/**
-	 * The `"` character.
+	 * `"` 문자
 	 */
 	DoubleQuote = 34,
 	/**
-	 * The `#` character.
+	 * `#` 문자
 	 */
 	Hash = 35,
 	/**
-	 * The `$` character.
+	 * `$` 문자
 	 */
 	DollarSign = 36,
 	/**
-	 * The `%` character.
+	 * `%` 문자
 	 */
 	PercentSign = 37,
 	/**
-	 * The `&` character.
+	 * `&` 문자
 	 */
 	Ampersand = 38,
 	/**
-	 * The `'` character.
+	 * `'` 문자
 	 */
 	SingleQuote = 39,
 	/**
-	 * The `(` character.
+	 * `(` 문자
 	 */
 	OpenParen = 40,
 	/**
-	 * The `)` character.
+	 * `)` 문자
 	 */
 	CloseParen = 41,
 	/**
-	 * The `*` character.
+	 * `*` 문자
 	 */
 	Asterisk = 42,
 	/**
-	 * The `+` character.
+	 * `+` 문자
 	 */
 	Plus = 43,
 	/**
-	 * The `,` character.
+	 * `,` 문자
 	 */
 	Comma = 44,
 	/**
-	 * The `-` character.
+	 * `-` 문자
 	 */
 	Dash = 45,
 	/**
-	 * The `.` character.
+	 * `.` 문자
 	 */
 	Period = 46,
 	/**
-	 * The `/` character.
+	 * `/` 문자
 	 */
 	Slash = 47,
 
@@ -101,31 +108,31 @@ export const enum CharCode {
 	Digit9 = 57,
 
 	/**
-	 * The `:` character.
+	 * `:` 문자
 	 */
 	Colon = 58,
 	/**
-	 * The `;` character.
+	 * `;` 문자
 	 */
 	Semicolon = 59,
 	/**
-	 * The `<` character.
+	 * `<` 문자
 	 */
 	LessThan = 60,
 	/**
-	 * The `=` character.
+	 * `=` 문자
 	 */
 	Equals = 61,
 	/**
-	 * The `>` character.
+	 * `>` 문자
 	 */
 	GreaterThan = 62,
 	/**
-	 * The `?` character.
+	 * `?` 문자
 	 */
 	QuestionMark = 63,
 	/**
-	 * The `@` character.
+	 * `@` 문자
 	 */
 	AtSign = 64,
 
@@ -157,27 +164,27 @@ export const enum CharCode {
 	Z = 90,
 
 	/**
-	 * The `[` character.
+	 * `[` 문자
 	 */
 	OpenSquareBracket = 91,
 	/**
-	 * The `\` character.
+	 * `\` 문자
 	 */
 	Backslash = 92,
 	/**
-	 * The `]` character.
+	 * `]` 문자
 	 */
 	CloseSquareBracket = 93,
 	/**
-	 * The `^` character.
+	 * `^` 문자
 	 */
 	Caret = 94,
 	/**
-	 * The `_` character.
+	 * `_` 문자
 	 */
 	Underline = 95,
 	/**
-	 * The ``(`)`` character.
+	 * ``(`)`` 문자
 	 */
 	BackTick = 96,
 
@@ -209,19 +216,19 @@ export const enum CharCode {
 	z = 122,
 
 	/**
-	 * The `{` character.
+	 * `{` 문자
 	 */
 	OpenCurlyBrace = 123,
 	/**
-	 * The `|` character.
+	 * `|` 문자
 	 */
 	Pipe = 124,
 	/**
-	 * The `}` character.
+	 * `}` 문자
 	 */
 	CloseCurlyBrace = 125,
 	/**
-	 * The `~` character.
+	 * `~` 문자
 	 */
 	Tilde = 126,
 

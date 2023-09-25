@@ -1,6 +1,13 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * suggest 폴더 대장
+ *
+ * [개요] export
+ * export class `SuggestController` implements IEditorContribution
+ * export class `TriggerSuggestAction` extends EditorAction
  *--------------------------------------------------------------------------------------------*/
 
 import { alert } from 'vs/base/browser/ui/aria/aria';
@@ -122,6 +129,7 @@ export class SuggestController implements IEditorContribution {
 	private readonly _onWillInsertSuggestItem = new Emitter<{ item: CompletionItem }>();
 	readonly onWillInsertSuggestItem: Event<{ item: CompletionItem }> = this._onWillInsertSuggestItem.event;
 
+	// 생성자
 	constructor(
 		editor: ICodeEditor,
 		@ISuggestMemoryService private readonly _memoryService: ISuggestMemoryService,
@@ -638,6 +646,7 @@ export class SuggestController implements IEditorContribution {
 	}
 
 	acceptSelectedSuggestion(keepAlternativeSuggestions: boolean, alternativeOverwriteConfig: boolean): void {
+		// console.log("이벤트: acceptSelectedSuggestion - 아이템 선택")
 		const item = this.widget.value.getFocusedItem();
 		let flags = 0;
 		if (keepAlternativeSuggestions) {
@@ -668,6 +677,7 @@ export class SuggestController implements IEditorContribution {
 	}
 
 	selectNextSuggestion(): void {
+		// console.log("이벤트: selectNextSuggestion - 다음 아이템 선택")
 		this.widget.value.selectNext();
 	}
 

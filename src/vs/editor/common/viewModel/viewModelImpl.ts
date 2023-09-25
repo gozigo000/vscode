@@ -899,7 +899,7 @@ export class ViewModel extends Disposable implements IViewModel {
 
 		const fontInfo = this._configuration.options.get(EditorOption.fontInfo);
 		const colorMap = this._getColorMap();
-		const hasBadChars = (/[:;\\\/<>]/.test(fontInfo.fontFamily));
+		const hasBadChars = /[:;\\\/<>]/.test(fontInfo.fontFamily);
 		const useDefaultFontFamily = (hasBadChars || fontInfo.fontFamily === EDITOR_FONT_DEFAULTS.fontFamily);
 		let fontFamily: string;
 		if (useDefaultFontFamily) {

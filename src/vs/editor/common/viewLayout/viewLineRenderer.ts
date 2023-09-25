@@ -462,10 +462,10 @@ function resolveRenderLineInput(input: RenderLineInput): ResolvedRenderLineInput
 		// for inline decorations. `extractControlCharacters` removes empty line parts.
 		tokens = extractControlCharacters(lineContent, tokens);
 	}
-	if (input.renderWhitespace === RenderWhitespace.All ||
-		input.renderWhitespace === RenderWhitespace.Boundary ||
-		(input.renderWhitespace === RenderWhitespace.Selection && !!input.selectionsOnLine) ||
-		(input.renderWhitespace === RenderWhitespace.Trailing && !input.continuesWithWrappedLine)
+	if (input.renderWhitespace === RenderWhitespace.All
+		|| input.renderWhitespace === RenderWhitespace.Boundary
+		|| (input.renderWhitespace === RenderWhitespace.Selection && !!input.selectionsOnLine)
+		|| (input.renderWhitespace === RenderWhitespace.Trailing && !input.continuesWithWrappedLine)
 	) {
 		tokens = _applyRenderWhitespace(input, lineContent, len, tokens);
 	}
@@ -907,8 +907,13 @@ function _applyInlineDecorations(lineContent: string, len: number, tokens: LineP
 }
 
 /**
- * This function is on purpose not split up into multiple functions to allow runtime type inference (i.e. performance reasons).
+ * 이 함수는, 런타임 타입 추론을 위해서, 의도적으로 여러 개의 함수로 나누지 않고, \
+ * 통째로 코딩했음. (i.e. performance reasons). \
  * Notice how all the needed data is fully resolved and passed in (i.e. no other calls).
+ *
+ * (my) 여기에서 설정한 CSS style 속성은 화면에 보여지기만 하는 용도임. \
+ * 예를 들어, 밑줄 속성 `style="text-decoration: underline;"`을 추가하면 \
+ * 화면에 밑줄이 그려지지만, 복/붙할 때 밑줄 속성은 복사되지 않음.
  */
 function _renderLine(input: ResolvedRenderLineInput, sb: StringBuilder): RenderLineOutput {
 	const fontIsMonospace = input.fontIsMonospace;
@@ -963,7 +968,7 @@ function _renderLine(input: ResolvedRenderLineInput, sb: StringBuilder): RenderL
 		sb.appendString(partRendersWhitespaceWithWidth ? 'mtkz' : partType);
 		sb.appendASCIICharCode(CharCode.DoubleQuote);
 
-		if (partRendersWhitespace) {
+		if (partRendersWhitespace) { // 공백문자도 표시하는 경우
 
 			let partWidth = 0;
 			{
@@ -1049,6 +1054,11 @@ function _renderLine(input: ResolvedRenderLineInput, sb: StringBuilder): RenderL
 						break;
 
 					case CharCode.LessThan:
+						// 테스트용
+						// sb.appendString('H<sub>2</sub>');
+						// sb.appendString('H<sup>2</sup>');
+						// sb.appendString('H<span style="vertical-align: sub;">2</span>');
+						// sb.appendString('감사<span style="vertical-align: super;">감사</span>');
 						sb.appendString('&lt;');
 						break;
 

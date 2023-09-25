@@ -3,6 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [개요]
+ * export class VSBuffer
+ * export function binaryIndexOf
+ * export function readUInt16LE
+ * export function writeUInt16LE
+ * export function readUInt32BE
+ * export function writeUInt32BE
+ * export function readUInt32LE
+ * export function writeUInt32LE
+ * export function readUInt8
+ * export function writeUInt8
+ * ...
+ *
+ */
+
 import { Lazy } from 'vs/base/common/lazy';
 import * as streams from 'vs/base/common/stream';
 
@@ -16,9 +32,22 @@ let textDecoder: TextDecoder | null;
 
 export class VSBuffer {
 
+	readonly buffer: Uint8Array;
+	readonly byteLength: number;
+
+	// 생성자
+	private constructor(buffer: Uint8Array) {
+		this.buffer = buffer;
+		this.byteLength = this.buffer.byteLength;
+	}
+
 	/**
-	 * When running in a nodejs context, the backing store for the returned `VSBuffer` instance
-	 * might use a nodejs Buffer allocated from node's Buffer pool, which is not transferrable.
+	 * `byteLength`만큼 메모리 할당
+	 *
+	 * nodejs 컨텍스트에서 실행할 때, 반환된 `VSBuffer` 인스턴스를 위한 백업 저장소는
+	 * node의 버퍼 풀에서 할당된 nodejs 버퍼를 사용할 수 있습니다. 이 버퍼는 전송할 수 없습니다.
+	 *
+	 * 참고: 백업 저장소(backing store) - https://velog.io/@dhfl0710/주기억-장치
 	 */
 	static alloc(byteLength: number): VSBuffer {
 		if (hasBuffer) {
@@ -29,9 +58,11 @@ export class VSBuffer {
 	}
 
 	/**
-	 * When running in a nodejs context, if `actual` is not a nodejs Buffer, the backing store for
-	 * the returned `VSBuffer` instance might use a nodejs Buffer allocated from node's Buffer pool,
-	 * which is not transferrable.
+	 * `Uint8Array`를 `VSBuffer`로 래핑하기
+	 *
+	 * nodejs 컨텍스트에서 실행할 때, `actual`이 nodejs 버퍼가 아니라면, 반환된 `VSBuffer`
+	 * 인스턴스를 위한 백업 저장소는 node의 버퍼 풀에서 할당된 nodejs 버퍼를 사용할 수 있습니다.
+	 * 이 버퍼는 전송할 수 없습니다.
 	 */
 	static wrap(actual: Uint8Array): VSBuffer {
 		if (hasBuffer && !(Buffer.isBuffer(actual))) {
@@ -43,8 +74,10 @@ export class VSBuffer {
 	}
 
 	/**
-	 * When running in a nodejs context, the backing store for the returned `VSBuffer` instance
-	 * might use a nodejs Buffer allocated from node's Buffer pool, which is not transferrable.
+	 * 문자열을 VSBuffer 인스턴스에 저장하고, VSBuffer 인스턴스 반환
+	 *
+	 * nodejs 컨텍스트에서 실행할 때, 반환된 `VSBuffer` 인스턴스를 위한 백업 저장소는
+	 * node의 버퍼 풀에서 할당된 nodejs 버퍼를 사용할 수 있습니다. 이 버퍼는 전송할 수 없습니다.
 	 */
 	static fromString(source: string, options?: { dontUseNodeBuffer?: boolean }): VSBuffer {
 		const dontUseNodeBuffer = options?.dontUseNodeBuffer || false;
@@ -59,8 +92,10 @@ export class VSBuffer {
 	}
 
 	/**
-	 * When running in a nodejs context, the backing store for the returned `VSBuffer` instance
-	 * might use a nodejs Buffer allocated from node's Buffer pool, which is not transferrable.
+	 * 정수 배열을 VSBuffer 인스턴스에 저장하고, VSBuffer 인스턴스 반환
+	 *
+	 * nodejs 컨텍스트에서 실행할 때, 반환된 `VSBuffer` 인스턴스를 위한 백업 저장소는
+	 * node의 버퍼 풀에서 할당된 nodejs 버퍼를 사용할 수 있습니다. 이 버퍼는 전송할 수 없습니다.
 	 */
 	static fromByteArray(source: number[]): VSBuffer {
 		const result = VSBuffer.alloc(source.length);
@@ -71,8 +106,10 @@ export class VSBuffer {
 	}
 
 	/**
-	 * When running in a nodejs context, the backing store for the returned `VSBuffer` instance
-	 * might use a nodejs Buffer allocated from node's Buffer pool, which is not transferrable.
+	 * VSBuffer 배열의 버퍼들을 하나의 VSBuffer에 저장하기
+	 *
+	 * nodejs 컨텍스트에서 실행할 때, 반환된 `VSBuffer` 인스턴스를 위한 백업 저장소는
+	 * node의 버퍼 풀에서 할당된 nodejs 버퍼를 사용할 수 있습니다. 이 버퍼는 전송할 수 없습니다.
 	 */
 	static concat(buffers: VSBuffer[], totalLength?: number): VSBuffer {
 		if (typeof totalLength === 'undefined') {
@@ -93,17 +130,11 @@ export class VSBuffer {
 		return ret;
 	}
 
-	readonly buffer: Uint8Array;
-	readonly byteLength: number;
-
-	private constructor(buffer: Uint8Array) {
-		this.buffer = buffer;
-		this.byteLength = this.buffer.byteLength;
-	}
-
 	/**
-	 * When running in a nodejs context, the backing store for the returned `VSBuffer` instance
-	 * might use a nodejs Buffer allocated from node's Buffer pool, which is not transferrable.
+	 * VSBuffer 인스턴스 복사하기
+	 *
+	 * nodejs 컨텍스트에서 실행할 때, 반환된 `VSBuffer` 인스턴스를 위한 백업 저장소는
+	 * node의 버퍼 풀에서 할당된 nodejs 버퍼를 사용할 수 있습니다. 이 버퍼는 전송할 수 없습니다.
 	 */
 	clone(): VSBuffer {
 		const result = VSBuffer.alloc(this.byteLength);
@@ -178,8 +209,9 @@ export class VSBuffer {
 }
 
 /**
- * Like String.indexOf, but works on Uint8Arrays.
- * Uses the boyer-moore-horspool algorithm to be reasonably speedy.
+ * Uint8Arrays에 대해서 string.indexof( )처럼 동작합니다.
+ * - 속도를 위해서 보이어-무어-호스풀(Boyer-Moore-Horspool) 알고리즘을 사용했습니다.
+ * - 참고: string.indexof( ) - https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/indexOf
  */
 export function binaryIndexOf(haystack: Uint8Array, needle: Uint8Array, offset = 0): number {
 	const needleLen = needle.byteLength;
@@ -225,19 +257,21 @@ export function binaryIndexOf(haystack: Uint8Array, needle: Uint8Array, offset =
 	return result;
 }
 
+/** `offset`위치에 있는 값 읽기 */
 export function readUInt16LE(source: Uint8Array, offset: number): number {
+	// 참고: >>> - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unsigned_right_shift
 	return (
 		((source[offset + 0] << 0) >>> 0) |
 		((source[offset + 1] << 8) >>> 0)
 	);
 }
-
+/** `offset`위치에 `value`값 쓰기 */
 export function writeUInt16LE(destination: Uint8Array, value: number, offset: number): void {
 	destination[offset + 0] = (value & 0b11111111);
 	value = value >>> 8;
 	destination[offset + 1] = (value & 0b11111111);
 }
-
+/** `offset`위치에 있는 값 읽기 */
 export function readUInt32BE(source: Uint8Array, offset: number): number {
 	return (
 		source[offset] * 2 ** 24
@@ -246,7 +280,7 @@ export function readUInt32BE(source: Uint8Array, offset: number): number {
 		+ source[offset + 3]
 	);
 }
-
+/** `offset`위치에 `value`값 쓰기 */
 export function writeUInt32BE(destination: Uint8Array, value: number, offset: number): void {
 	destination[offset + 3] = value;
 	value = value >>> 8;
@@ -256,7 +290,7 @@ export function writeUInt32BE(destination: Uint8Array, value: number, offset: nu
 	value = value >>> 8;
 	destination[offset] = value;
 }
-
+/** `offset`위치에 있는 값 읽기 */
 export function readUInt32LE(source: Uint8Array, offset: number): number {
 	return (
 		((source[offset + 0] << 0) >>> 0) |
@@ -265,7 +299,7 @@ export function readUInt32LE(source: Uint8Array, offset: number): number {
 		((source[offset + 3] << 24) >>> 0)
 	);
 }
-
+/** `offset`위치에 `value`값 쓰기 */
 export function writeUInt32LE(destination: Uint8Array, value: number, offset: number): void {
 	destination[offset + 0] = (value & 0b11111111);
 	value = value >>> 8;
@@ -275,14 +309,15 @@ export function writeUInt32LE(destination: Uint8Array, value: number, offset: nu
 	value = value >>> 8;
 	destination[offset + 3] = (value & 0b11111111);
 }
-
+/** `offset`위치에 있는 값 읽기 */
 export function readUInt8(source: Uint8Array, offset: number): number {
 	return source[offset];
 }
-
+/** `offset`위치에 `value`값 쓰기 */
 export function writeUInt8(destination: Uint8Array, value: number, offset: number): void {
 	destination[offset] = value;
 }
+
 
 export interface VSBufferReadable extends streams.Readable<VSBuffer> { }
 
@@ -291,6 +326,7 @@ export interface VSBufferReadableStream extends streams.ReadableStream<VSBuffer>
 export interface VSBufferWriteableStream extends streams.WriteableStream<VSBuffer> { }
 
 export interface VSBufferReadableBufferedStream extends streams.ReadableBufferedStream<VSBuffer> { }
+
 
 export function readableToBuffer(readable: VSBufferReadable): VSBuffer {
 	return streams.consumeReadable<VSBuffer>(readable, chunks => VSBuffer.concat(chunks));
@@ -339,7 +375,11 @@ export function prefixedBufferStream(prefix: VSBuffer, stream: VSBufferReadableS
 	return streams.prefixedStream(prefix, stream, chunks => VSBuffer.concat(chunks));
 }
 
-/** Decodes base64 to a uint8 array. URL-encoded and unpadded base64 is allowed. */
+/**
+ * `base64`에서 `uint8 array`로 디코딩하기
+ * - 인코딩된 URL이나 언패딩된 base64도 디코딩할 수 있음
+ * - 참고: 베이스64 - https://ko.wikipedia.org/wiki/베이스64
+*/
 export function decodeBase64(encoded: string) {
 	let building = 0;
 	let remainder = 0;
@@ -404,7 +444,10 @@ export function decodeBase64(encoded: string) {
 const base64Alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 const base64UrlSafeAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
-/** Encodes a buffer to a base64 string. */
+/**
+ * `base64` 문자열로 인코딩하기
+ * - 참고: 베이스64 - https://ko.wikipedia.org/wiki/베이스64
+ */
 export function encodeBase64({ buffer }: VSBuffer, padded = true, urlSafe = false) {
 	const dictionary = urlSafe ? base64UrlSafeAlphabet : base64Alphabet;
 	let output = '';

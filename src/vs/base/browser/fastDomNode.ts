@@ -193,6 +193,7 @@ export class FastDomNode<T extends HTMLElement> {
 		}
 		this._textDecoration = textDecoration;
 		this.domNode.style.textDecoration = this._textDecoration;
+		// this.domNode.style.verticalAlign = ' sub';
 	}
 
 	public setLineHeight(_lineHeight: number | string): void {
@@ -307,6 +308,7 @@ export class FastDomNode<T extends HTMLElement> {
 	}
 }
 
+/** 숫자 뒤에 'px' 붙여서 문자열로 바꿔주기 (ex. `30` -> `'30px'`) */
 function numberAsPixels(value: number | string): string {
 	return (typeof value === 'number' ? `${value}px` : value);
 }

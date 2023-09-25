@@ -44,7 +44,7 @@ export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens
 			continue;
 		}
 
-		let partContent = '';
+		let partContent = ''; // 토큰 글자가 저장되는 곳
 
 		for (; charIndex < tokenEndIndex && charIndex < endOffset; charIndex++) {
 			const charCode = text.charCodeAt(charIndex);

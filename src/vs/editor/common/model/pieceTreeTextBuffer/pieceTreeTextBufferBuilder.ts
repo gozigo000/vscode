@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ *        class `PieceTreeTextBufferFactory` implements ITextBufferFactory
+ * export class `PieceTreeTextBufferBuilder` implements ITextBufferBuilder
  *--------------------------------------------------------------------------------------------*/
 
 import { CharCode } from 'vs/base/common/charCode';
@@ -10,6 +15,7 @@ import { DefaultEndOfLine, ITextBuffer, ITextBufferBuilder, ITextBufferFactory }
 import { StringBuffer, createLineStarts, createLineStartsFast } from 'vs/editor/common/model/pieceTreeTextBuffer/pieceTreeBase';
 import { PieceTreeTextBuffer } from 'vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBuffer';
 
+/** 조각 트리 텍스트 버퍼 팩토리 */
 class PieceTreeTextBufferFactory implements ITextBufferFactory {
 
 	constructor(
@@ -24,30 +30,32 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 		private readonly _normalizeEOL: boolean
 	) { }
 
+	/** 줄바꿈 문자 빈도,기본값에 따라 '\r\n'이나 '\n' 중 하나 반환 */
 	private _getEOL(defaultEOL: DefaultEndOfLine): '\r\n' | '\n' {
 		const totalEOLCount = this._cr + this._lf + this._crlf;
 		const totalCRCount = this._cr + this._crlf;
 		if (totalEOLCount === 0) {
-			// This is an empty file or a file with precisely one line
+			// 빈 파일이거나 한 줄짜리 파일인 경우이다
 			return (defaultEOL === DefaultEndOfLine.LF ? '\n' : '\r\n');
 		}
 		if (totalCRCount > totalEOLCount / 2) {
 			// More than half of the file contains \r\n ending lines
 			return '\r\n';
 		}
-		// At least one line more ends in \n
+		// '\n'으로 끝나는 줄이 하나 이상 있는 경우이다
 		return '\n';
 	}
 
+	/** 조각 트리 텍스트 버퍼 만들기 */
 	public create(defaultEOL: DefaultEndOfLine): { textBuffer: ITextBuffer; disposable: IDisposable } {
 		const eol = this._getEOL(defaultEOL);
 		const chunks = this._chunks;
 
 		if (this._normalizeEOL &&
-			((eol === '\r\n' && (this._cr > 0 || this._lf > 0))
-				|| (eol === '\n' && (this._cr > 0 || this._crlf > 0)))
+			((eol === '\r\n' && (this._cr > 0 || this._lf > 0)) ||
+				(eol === '\n' && (this._cr > 0 || this._crlf > 0)))
 		) {
-			// Normalize pieces
+			// 줄바꿈 문자 하나로 통일하기 (Normalize pieces)
 			for (let i = 0, len = chunks.length; i < len; i++) {
 				const str = chunks[i].buffer.replace(/\r\n|\r|\n/g, eol);
 				const newLineStart = createLineStartsFast(str);
@@ -59,11 +67,17 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 		return { textBuffer: textBuffer, disposable: textBuffer };
 	}
 
+	/** `첫 번째 덩어리`에서 `첫 줄` 반환 */
 	public getFirstLineText(lengthLimit: number): string {
 		return this._chunks[0].buffer.substr(0, lengthLimit).split(/\r\n|\r|\n/)[0];
 	}
 }
 
+/**
+ * 조각 트리 텍스트 버퍼 빌더
+ * - 문자열 덩어리s 보관
+ * - 덩어리별로 줄 갯수, 줄 시작 위치 등도 계산해서 보관해둠
+ */
 export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 	private readonly chunks: StringBuffer[];
 	private BOM: string;
@@ -95,12 +109,18 @@ export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 		this.isBasicASCII = true;
 	}
 
+	/**
+	 * 문자열 덩어리(chunk) 받아서 정리하고 보관해둠
+	 * - 오리지날 문자열 덩어리 저장
+	 * - 덩어리에서 줄 시작 위치s 저장
+	 */
 	public acceptChunk(chunk: string): void {
 		if (chunk.length === 0) {
 			return;
 		}
 
 		if (this.chunks.length === 0) {
+			// BOM으로 시작하는 문서인지 체크
 			if (strings.startsWithUTF8BOM(chunk)) {
 				this.BOM = strings.UTF8_BOM_CHARACTER;
 				chunk = chunk.substr(1);
@@ -109,7 +129,7 @@ export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 
 		const lastChar = chunk.charCodeAt(chunk.length - 1);
 		if (lastChar === CharCode.CarriageReturn || (lastChar >= 0xD800 && lastChar <= 0xDBFF)) {
-			// last character is \r or a high surrogate => keep it back
+			// 마지막 문자가 '\r' 또는 high surrogate인 경우 => 나머지만 처리하고, 마지막 문자는 별도로 보관해두기
 			this._acceptChunk1(chunk.substr(0, chunk.length - 1), false);
 			this._hasPreviousChar = true;
 			this._previousChar = lastChar;
@@ -127,6 +147,7 @@ export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 		}
 
 		if (this._hasPreviousChar) {
+			// 이전에 보관해둔 마지막 문자랑 함께 처리
 			this._acceptChunk2(String.fromCharCode(this._previousChar) + chunk);
 		} else {
 			this._acceptChunk2(chunk);
@@ -144,6 +165,7 @@ export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 		if (!lineStarts.isBasicASCII) {
 			// this chunk contains non basic ASCII characters
 			this.isBasicASCII = false;
+			// ToDo: RTL 관련 코드 지우기
 			if (!this.containsRTL) {
 				this.containsRTL = strings.containsRTL(chunk);
 			}

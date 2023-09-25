@@ -28,6 +28,7 @@ export interface IWordAtPosition {
 }
 
 /**
+ * 단어 정규표현식 정의
  * Create a word definition regular expression based on default word separators.
  * Optionally provide allowed separators that should be included in words.
  *

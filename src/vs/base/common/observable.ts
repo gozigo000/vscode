@@ -3,6 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * [참고]
+ * https://greedy0110.tistory.com/48
+ * https://1000one.tistory.com/59
+ */
+
 export {
 	IObservable,
 	IObserver,

@@ -1,32 +1,39 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export interface IPosition
+ * export class Position
  *--------------------------------------------------------------------------------------------*/
 
 /**
- * A position in the editor. This interface is suitable for serialization.
+ * 에디터에서 위치(position)
+ *
+ * This interface is suitable for serialization.
  */
 export interface IPosition {
 	/**
-	 * line number (starts at 1)
+	 * line 번호 (`1`부터 시작)
 	 */
 	readonly lineNumber: number;
 	/**
-	 * column (the first character in a line is between column 1 and column 2)
-	 */
+	 * column 번호 (각 line에서 첫 글자는 column `1`과 column `2` 사이에 있음)
+	*/
 	readonly column: number;
 }
 
 /**
- * A position in the editor.
- */
+ * 에디터에서 위치(position)
+*/
 export class Position {
 	/**
-	 * line number (starts at 1)
-	 */
+	 * line 번호 (`1`부터 시작)
+	*/
 	public readonly lineNumber: number;
 	/**
-	 * column (the first character in a line is between column 1 and column 2)
+	 * column 번호 (각 line에서 첫 글자는 column `1`과 column `2` 사이에 있음)
 	 */
 	public readonly column: number;
 
@@ -36,10 +43,10 @@ export class Position {
 	}
 
 	/**
-	 * Create a new position from this position.
+	 * 새로운 Position 만들기
 	 *
-	 * @param newLineNumber new line number
-	 * @param newColumn new column
+	 * @param newLineNumber 새로운 line 번호
+	 * @param newColumn 새로운 column 번호
 	 */
 	with(newLineNumber: number = this.lineNumber, newColumn: number = this.column): Position {
 		if (newLineNumber === this.lineNumber && newColumn === this.column) {
@@ -50,9 +57,9 @@ export class Position {
 	}
 
 	/**
-	 * Derive a new position from this position.
+	 * delta만큼 위치 이동하기
 	 *
-	 * @param deltaLineNumber line number delta
+	 * @param deltaLineNumber line delta
 	 * @param deltaColumn column delta
 	 */
 	delta(deltaLineNumber: number = 0, deltaColumn: number = 0): Position {
@@ -60,14 +67,14 @@ export class Position {
 	}
 
 	/**
-	 * Test if this position equals other position
+	 * position `this`와 position `other`가 동일한지 체크
 	 */
 	public equals(other: IPosition): boolean {
 		return Position.equals(this, other);
 	}
 
 	/**
-	 * Test if position `a` equals position `b`
+	 * position `a`와 position `b`가 동일한지 체크
 	 */
 	public static equals(a: IPosition | null, b: IPosition | null): boolean {
 		if (!a && !b) {
@@ -82,16 +89,18 @@ export class Position {
 	}
 
 	/**
-	 * Test if this position is before other position.
-	 * If the two positions are equal, the result will be false.
+	 * position `this`가 position `other`보다 앞에 있는지 체크
+	 *
+	 * 만약에 두 위치가 동일하면 `false` 반환함
 	 */
 	public isBefore(other: IPosition): boolean {
 		return Position.isBefore(this, other);
 	}
 
 	/**
-	 * Test if position `a` is before position `b`.
-	 * If the two positions are equal, the result will be false.
+	 * position `a`가 position `b`보다 앞에 있는지 체크
+	 *
+	 * 만약에 두 위치가 동일하면 `false` 반환함
 	 */
 	public static isBefore(a: IPosition, b: IPosition): boolean {
 		if (a.lineNumber < b.lineNumber) {
@@ -104,16 +113,18 @@ export class Position {
 	}
 
 	/**
-	 * Test if this position is before other position.
-	 * If the two positions are equal, the result will be true.
+	 * position `this`가 position `other`보다 앞에 있는지 체크
+	 *
+	 * 만약에 두 위치가 동일하면 `true` 반환함
 	 */
 	public isBeforeOrEqual(other: IPosition): boolean {
 		return Position.isBeforeOrEqual(this, other);
 	}
 
 	/**
-	 * Test if position `a` is before position `b`.
-	 * If the two positions are equal, the result will be true.
+	 * position `a`가 position `b`보다 앞에 있는지 체크
+	 *
+	 * 만약에 두 위치가 동일하면 `true` 반환함
 	 */
 	public static isBeforeOrEqual(a: IPosition, b: IPosition): boolean {
 		if (a.lineNumber < b.lineNumber) {
@@ -126,7 +137,7 @@ export class Position {
 	}
 
 	/**
-	 * A function that compares positions, useful for sorting
+	 * position 비교하는 함수, 정렬(sort)할 때 유용함.
 	 */
 	public static compare(a: IPosition, b: IPosition): number {
 		const aLineNumber = a.lineNumber | 0;
@@ -142,14 +153,14 @@ export class Position {
 	}
 
 	/**
-	 * Clone this position.
+	 * `this` 위치 복제하기
 	 */
 	public clone(): Position {
 		return new Position(this.lineNumber, this.column);
 	}
 
 	/**
-	 * Convert to a human-readable representation.
+	 * `"(line번호,column번호)"` 형태의 문자열로 반환 (human-readable)
 	 */
 	public toString(): string {
 		return '(' + this.lineNumber + ',' + this.column + ')';
@@ -158,14 +169,14 @@ export class Position {
 	// ---
 
 	/**
-	 * Create a `Position` from an `IPosition`.
+	 * `IPosition`으로 `Position` 객체 만들기.
 	 */
 	public static lift(pos: IPosition): Position {
 		return new Position(pos.lineNumber, pos.column);
 	}
 
 	/**
-	 * Test if `obj` is an `IPosition`.
+	 * `obj`가 `IPosition` 인터페이스인지 체크.
 	 */
 	public static isIPosition(obj: any): obj is IPosition {
 		return (
