@@ -893,14 +893,14 @@ export class TextAreaHandler extends ViewPart {
 		}
 		ta.setTextDecoration(`${renderData.underline ? ' underline' : ''}${renderData.strikethrough ? ' line-through' : ''}`);
 
-		//#region 테스트용
-		ta.setTop(50);
-		ta.setTextDecoration(' underline');
-		ta.setBackgroundColor('blue');
-		ta.setFontSize(30);
-		ta.setLineHeight(50);
-		ta.setHeight(50);
-		ta.setWidth(100);
+		//#region 테스트용 - IME에서 현재 조합 중인 글자 보여주는 위치 바꿔줌
+		// ta.setTop(50);
+		// ta.setTextDecoration(' underline');
+		// ta.setBackgroundColor('blue');
+		// ta.setFontSize(30);
+		// ta.setLineHeight(50);
+		// ta.setHeight(50);
+		// ta.setWidth(100);
 		//#endregion
 
 		tac.setTop(renderData.useCover ? renderData.top : 0);

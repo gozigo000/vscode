@@ -4,10 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 /**
- * [개요]
+ * [개요] export
  * export interface `IViewLineTokens`
  * export class `LineTokens` implements IViewLineTokens
- *        class `SliceLineTokens` implements IViewLineTokens
  *--------------------------------------------------------------------------------------------*/
 
 import { ILanguageIdCodec } from 'vs/editor/common/languages';

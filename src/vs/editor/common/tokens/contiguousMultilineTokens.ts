@@ -1,6 +1,10 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export class ContiguousMultilineTokens
  *--------------------------------------------------------------------------------------------*/
 
 import * as arrays from 'vs/base/common/arrays';
@@ -15,6 +19,7 @@ import { LineRange } from 'vs/editor/common/core/lineRange';
  * Represents contiguous tokens over a contiguous range of lines.
  */
 export class ContiguousMultilineTokens {
+
 	public static deserialize(buff: Uint8Array, offset: number, result: ContiguousMultilineTokens[]): number {
 		const view32 = new Uint32Array(buff.buffer);
 		const startLineNumber = readUInt32BE(buff, offset); offset += 4;
@@ -35,13 +40,12 @@ export class ContiguousMultilineTokens {
 	private _startLineNumber: number;
 
 	/**
-	 * The tokens are stored in a binary format. There is an element for each line,
+	 * The tokens are stored in a binary format. There is an element for each line, \
 	 * so `tokens[index]` contains all tokens on line `startLineNumber + index`.
 	 *
-	 * On a specific line, each token occupies two array indices. For token i:
-	 *  - at offset 2*i => endOffset
-	 *  - at offset 2*i + 1 => metadata
-	 *
+	 * On a specific line, each token occupies two array indices. For token `i`:
+	 *  - at offset `2*i` => endOffset
+	 *  - at offset `2*i + 1` => metadata
 	 */
 	private _tokens: (Uint32Array | ArrayBuffer | null)[];
 
@@ -69,7 +73,14 @@ export class ContiguousMultilineTokens {
 	}
 
 	/**
-	 * @see {@link _tokens}
+	 * {@link _tokens} 내용:
+	 *
+	 * The tokens are stored in a binary format. There is an element for each line, \
+	 * so `tokens[index]` contains all tokens on line `startLineNumber + index`.
+	 *
+	 * On a specific line, each token occupies two array indices. For token `i`:
+	 *  - at offset `2*i` => endOffset
+	 *  - at offset `2*i + 1` => metadata
 	 */
 	public getLineTokens(lineNumber: number): Uint32Array | ArrayBuffer | null {
 		return this._tokens[lineNumber - this._startLineNumber];
@@ -108,6 +119,7 @@ export class ContiguousMultilineTokens {
 		return offset;
 	}
 
+	/** 토근 내용 삽입/삭제 */
 	public applyEdit(range: IRange, text: string): void {
 		const [eolCount, firstLineLength] = countEOL(text);
 		this._acceptDeleteRange(range);
@@ -116,7 +128,7 @@ export class ContiguousMultilineTokens {
 
 	private _acceptDeleteRange(range: IRange): void {
 		if (range.startLineNumber === range.endLineNumber && range.startColumn === range.endColumn) {
-			// Nothing to delete
+			// 범위가 0이니까 지울 거 없음
 			return;
 		}
 
@@ -124,19 +136,19 @@ export class ContiguousMultilineTokens {
 		const lastLineIndex = range.endLineNumber - this._startLineNumber;
 
 		if (lastLineIndex < 0) {
-			// this deletion occurs entirely before this block, so we only need to adjust line numbers
+			// this deletion occurs entirely before this block, 줄 번호만 조정해주면 됨
 			const deletedLinesCount = lastLineIndex - firstLineIndex;
 			this._startLineNumber -= deletedLinesCount;
 			return;
 		}
 
 		if (firstLineIndex >= this._tokens.length) {
-			// this deletion occurs entirely after this block, so there is nothing to do
+			// this deletion occurs entirely after this block, 아무것도 안해도 됨
 			return;
 		}
 
 		if (firstLineIndex < 0 && lastLineIndex >= this._tokens.length) {
-			// this deletion completely encompasses this block
+			// this deletion 이 블록을 완전히 포함하고 있음
 			this._startLineNumber = 0;
 			this._tokens = [];
 			return;

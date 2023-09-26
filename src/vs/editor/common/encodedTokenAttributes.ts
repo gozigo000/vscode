@@ -35,6 +35,8 @@ export const enum FontStyle {
 	Bold = 2,
 	Underline = 4,
 	Strikethrough = 8,
+	// ToDo: subscript = 16
+	// ToDo: superscript = 32
 }
 
 /**

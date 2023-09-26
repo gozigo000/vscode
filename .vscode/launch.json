@@ -536,6 +536,21 @@
 	],
 	"compounds": [
 		{
+			"name": "VS Code (찬영)",
+			"stopAll": true,
+			"configurations": [
+				"Launch VS Code Internal",
+				"Attach to Main Process",
+				// "Attach to Extension Host",
+				// "Attach to Shared Process",
+			],
+			"preLaunchTask": "Ensure Prelaunch Dependencies",
+			"presentation": {
+				"group": "0_vscode",
+				"order": 1
+			}
+		},
+		{
 			"name": "VS Code",
 			"stopAll": true,
 			"configurations": [

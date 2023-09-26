@@ -7,7 +7,7 @@ import { editorActiveIndentGuide1, editorIndentGuide1 } from 'vs/editor/common/c
 import { IStandaloneThemeData } from 'vs/editor/standalone/common/standaloneTheme';
 import { editorBackground, editorForeground, editorInactiveSelection, editorSelectionHighlight } from 'vs/platform/theme/common/colorRegistry';
 
-/* -------------------------------- Begin vs theme -------------------------------- */
+/* -------------------------------- vs 테마 -------------------------------- */
 export const vs: IStandaloneThemeData = {
 	base: 'vs',
 	inherit: false,
@@ -21,7 +21,7 @@ export const vs: IStandaloneThemeData = {
 		{ token: 'variable.predefined', foreground: '4864AA' },
 		{ token: 'constant', foreground: 'dd0000' },
 		{ token: 'comment', foreground: '008000' },
-		{ token: 'number', foreground: '098658' },
+		{ token: 'number', foreground: '098658', fontStyle: 'italic underline bold' }, // 테스트용
 		{ token: 'number.hex', foreground: '3030c0' },
 		{ token: 'regexp', foreground: '800000' },
 		{ token: 'annotation', foreground: '808080' },
@@ -52,7 +52,7 @@ export const vs: IStandaloneThemeData = {
 		{ token: 'attribute.value.html', foreground: '0000FF' },
 		{ token: 'attribute.value.xml', foreground: '0000FF' },
 
-		{ token: 'string', foreground: 'A31515' },
+		{ token: 'string', foreground: 'A31515', fontStyle: 'italic underline bold ABC' }, // 테스트용
 		{ token: 'string.html', foreground: '0000FF' },
 		{ token: 'string.sql', foreground: 'FF0000' },
 		{ token: 'string.yaml', foreground: '0451A5' },
@@ -76,10 +76,9 @@ export const vs: IStandaloneThemeData = {
 		[editorSelectionHighlight]: '#ADD6FF4D'
 	}
 };
-/* -------------------------------- End vs theme -------------------------------- */
 
 
-/* -------------------------------- Begin vs-dark theme -------------------------------- */
+/* -------------------------------- vs-dark 테마 -------------------------------- */
 export const vs_dark: IStandaloneThemeData = {
 	base: 'vs-dark',
 	inherit: false,
@@ -147,11 +146,10 @@ export const vs_dark: IStandaloneThemeData = {
 		[editorSelectionHighlight]: '#ADD6FF26'
 	}
 };
-/* -------------------------------- End vs-dark theme -------------------------------- */
 
 
 
-/* -------------------------------- Begin hc-black theme -------------------------------- */
+/* -------------------------------- hc-black 테마 -------------------------------- */
 export const hc_black: IStandaloneThemeData = {
 	base: 'hc-black',
 	inherit: false,
@@ -208,9 +206,10 @@ export const hc_black: IStandaloneThemeData = {
 		[editorActiveIndentGuide1]: '#FFFFFF',
 	}
 };
-/* -------------------------------- End hc-black theme -------------------------------- */
 
-/* -------------------------------- Begin hc-light theme -------------------------------- */
+
+
+/* -------------------------------- hc-light 테마 -------------------------------- */
 export const hc_light: IStandaloneThemeData = {
 	base: 'hc-light',
 	inherit: false,
@@ -267,5 +266,4 @@ export const hc_light: IStandaloneThemeData = {
 		[editorActiveIndentGuide1]: '#292929',
 	}
 };
-/* -------------------------------- End hc-light theme -------------------------------- */
 

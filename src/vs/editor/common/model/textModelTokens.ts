@@ -1,6 +1,15 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요] export
+ * export class `TokenizerWithStateStore`<TState extends IState = IState>
+[*]export class `TokenizerWithStateStoreAndTextModel`<TState extends IState = IState> extends TokenizerWithStateStore<TState>
+ * export class `TrackingTokenizationStateStore`<TState extends IState>
+ * export class `TokenizationStateStore`<TState extends IState>
+ * export class `RangePriorityQueueImpl` implements RangePriorityQueue
+[*]export class `DefaultBackgroundTokenizer` implements IBackgroundTokenizer
  *--------------------------------------------------------------------------------------------*/
 
 import { IdleDeadline, runWhenIdle } from 'vs/base/common/async';
@@ -11,12 +20,15 @@ import { countEOL } from 'vs/editor/common/core/eolCounter';
 import { LineRange } from 'vs/editor/common/core/lineRange';
 import { OffsetRange } from 'vs/editor/common/core/offsetRange';
 import { Position } from 'vs/editor/common/core/position';
+
 import { StandardTokenType } from 'vs/editor/common/encodedTokenAttributes';
 import { EncodedTokenizationResult, IBackgroundTokenizationStore, IBackgroundTokenizer, ILanguageIdCodec, IState, ITokenizationSupport } from 'vs/editor/common/languages';
 import { nullTokenizeEncoded } from 'vs/editor/common/languages/nullTokenize';
+
 import { ITextModel } from 'vs/editor/common/model';
 import { FixedArray } from 'vs/editor/common/model/fixedArray';
 import { IModelContentChange } from 'vs/editor/common/textModelEvents';
+
 import { ContiguousMultilineTokensBuilder } from 'vs/editor/common/tokens/contiguousMultilineTokensBuilder';
 import { LineTokens } from 'vs/editor/common/tokens/lineTokens';
 
@@ -66,9 +78,9 @@ export class TokenizerWithStateStoreAndTextModel<TState extends IState = IState>
 
 			const text = this._textModel.getLineContent(lineToTokenize.lineNumber);
 
-			const r = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, text, true, lineToTokenize.startState);
-			builder.add(lineToTokenize.lineNumber, r.tokens);
-			this.store.setEndState(lineToTokenize.lineNumber, r.endState as TState);
+			const result = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, text, true, lineToTokenize.startState);
+			builder.add(lineToTokenize.lineNumber, result.tokens);
+			this.store.setEndState(lineToTokenize.lineNumber, result.endState as TState);
 		}
 	}
 
@@ -90,8 +102,8 @@ export class TokenizerWithStateStoreAndTextModel<TState extends IState = IState>
 			+ lineContent.substring(position.column - 1)
 		);
 
-		const r = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, text, true, lineStartState);
-		const lineTokens = new LineTokens(r.tokens, text, this._languageIdCodec);
+		const result = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, text, true, lineStartState);
+		const lineTokens = new LineTokens(result.tokens, text, this._languageIdCodec);
 		if (lineTokens.getCount() === 0) {
 			return StandardTokenType.Other;
 		}
@@ -161,9 +173,9 @@ export class TokenizerWithStateStoreAndTextModel<TState extends IState = IState>
 
 		for (let lineNumber = startLineNumber; lineNumber <= endLineNumber; lineNumber++) {
 			const text = this._textModel.getLineContent(lineNumber);
-			const r = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, text, true, state);
-			builder.add(lineNumber, r.tokens);
-			state = r.endState;
+			const result = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, text, true, state);
+			builder.add(lineNumber, result.tokens);
+			state = result.endState;
 		}
 
 		return { heuristicTokens: true };
@@ -197,16 +209,16 @@ export class TokenizerWithStateStoreAndTextModel<TState extends IState = IState>
 		const languageId = this._textModel.getLanguageId();
 		let state = initialState;
 		for (const line of likelyRelevantLines) {
-			const r = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, line, false, state);
-			state = r.endState;
+			const result = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, line, false, state);
+			state = result.endState;
 		}
 		return state;
 	}
 }
 
 /**
- * **Invariant:**
- * If the text model is retokenized from line 1 to {@link getFirstInvalidEndStateLineNumber}() - 1,
+ * **Invariant:** \
+ * If the text model is retokenized from line 1 to {@link getFirstInvalidEndStateLineNumber}() - 1, \
  * then the recomputed end state for line l will be equal to {@link getEndState}(l).
  */
 export class TrackingTokenizationStateStore<TState extends IState> {
@@ -418,24 +430,24 @@ export class RangePriorityQueueImpl implements RangePriorityQueue {
 	}
 }
 
-
+/** 토큰 만들기 */
 function safeTokenize(languageIdCodec: ILanguageIdCodec, languageId: string, tokenizationSupport: ITokenizationSupport | null, text: string, hasEOL: boolean, state: IState): EncodedTokenizationResult {
-	let r: EncodedTokenizationResult | null = null;
+	let result: EncodedTokenizationResult | null = null;
 
 	if (tokenizationSupport) {
 		try {
-			r = tokenizationSupport.tokenizeEncoded(text, hasEOL, state.clone());
+			result = tokenizationSupport.tokenizeEncoded(text, hasEOL, state.clone());
 		} catch (e) {
 			onUnexpectedError(e);
 		}
 	}
 
-	if (!r) {
-		r = nullTokenizeEncoded(languageIdCodec.encodeLanguageId(languageId), state);
+	if (!result) {
+		result = nullTokenizeEncoded(languageIdCodec.encodeLanguageId(languageId), state);
 	}
 
-	LineTokens.convertToEndOffset(r.tokens, text.length);
-	return r;
+	LineTokens.convertToEndOffset(result.tokens, text.length);
+	return result;
 }
 
 export class DefaultBackgroundTokenizer implements IBackgroundTokenizer {

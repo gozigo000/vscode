@@ -1,6 +1,10 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요] export
+ * export class `StandaloneThemeService` extends Disposable implements `IStandaloneThemeService`
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from 'vs/base/browser/dom';
@@ -158,6 +162,7 @@ class StandaloneTheme implements IStandaloneTheme {
 		return this._tokenTheme;
 	}
 
+	/** 찾았나? */
 	public getTokenStyleMetadata(type: string, modifiers: string[], modelLanguage: string): ITokenStyle | undefined {
 		// use theme rules match
 		const style = this.tokenTheme._match([type].concat(modifiers).join('.'));

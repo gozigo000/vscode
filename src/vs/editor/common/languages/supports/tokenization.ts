@@ -18,10 +18,7 @@ export class ParsedTokenThemeRule {
 
 	readonly token: string;
 	readonly index: number;
-
-	/**
-	 * -1 if not set. An or mask of `FontStyle` otherwise.
-	 */
+	/** -1 if not set. An or mask of `FontStyle` otherwise. */
 	readonly fontStyle: FontStyle;
 	readonly foreground: string | null;
 	readonly background: string | null;
@@ -72,6 +69,10 @@ export function parseTokenTheme(source: ITokenThemeRule[]): ParsedTokenThemeRule
 						break;
 					case 'strikethrough':
 						fontStyle = fontStyle | FontStyle.Strikethrough;
+						break;
+					case 'ABC':
+						console.log('테마 설정으로부터 metadata 만들기'); // 테스트용
+						// fontStyle = fontStyle | FontStyle.Strikethrough;
 						break;
 				}
 			}

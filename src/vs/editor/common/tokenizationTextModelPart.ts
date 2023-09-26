@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export interface ITokenizationTextModelPart
+ * export const enum BackgroundTokenizationState
  *--------------------------------------------------------------------------------------------*/
 
 import { IPosition } from 'vs/editor/common/core/position';
@@ -90,6 +95,9 @@ export interface ITokenizationTextModelPart {
 	readonly backgroundTokenizationState: BackgroundTokenizationState;
 }
 
+/**
+ * `InProgress` = 1, `Completed` = 2,
+ */
 export const enum BackgroundTokenizationState {
 	InProgress = 1,
 	Completed = 2,

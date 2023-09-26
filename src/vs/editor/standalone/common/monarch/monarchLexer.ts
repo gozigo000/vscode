@@ -497,7 +497,10 @@ export class MonarchTokenizer implements languages.ITokenizationSupport, IDispos
 		return tokensCollector.finalize(endLineState);
 	}
 
+	static cnt = 0;
 	private _tokenize(line: string, hasEOL: boolean, lineState: MonarchLineState, collector: IMonarchTokensCollector): MonarchLineState {
+		// console.log('토크나!!!'); // 테스트용
+		MonarchTokenizer.cnt++;
 		if (lineState.embeddedLanguageData) {
 			return this._nestedTokenize(line, hasEOL, lineState, 0, collector);
 		} else {

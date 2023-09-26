@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export class ContiguousTokensStore
+ * function getDefaultMetadata
  *--------------------------------------------------------------------------------------------*/
 
 import * as arrays from 'vs/base/common/arrays';
@@ -52,6 +57,18 @@ export class ContiguousTokensStore {
 		return new LineTokens(lineTokens, lineText, this._languageIdCodec);
 	}
 
+	public setTokens(topLevelLanguageId: string, lineIndex: number, lineTextLength: number, _tokens: Uint32Array | ArrayBuffer | null, checkEquality: boolean): boolean {
+		const tokens = ContiguousTokensStore._massageTokens(this._languageIdCodec.encodeLanguageId(topLevelLanguageId), lineTextLength, _tokens);
+		this._ensureLine(lineIndex);
+		const oldTokens = this._lineTokens[lineIndex];
+		this._lineTokens[lineIndex] = tokens;
+
+		if (checkEquality) {
+			return !ContiguousTokensStore._equals(oldTokens, tokens);
+		}
+		return false;
+	}
+
 	private static _massageTokens(topLevelLanguageId: LanguageId, lineTextLength: number, _tokens: Uint32Array | ArrayBuffer | null): Uint32Array | ArrayBuffer {
 
 		const tokens = _tokens ? toUint32Array(_tokens) : null;
@@ -61,7 +78,6 @@ export class ContiguousTokensStore {
 			if (tokens && tokens.length > 1) {
 				hasDifferentLanguageId = (TokenMetadata.getLanguageId(tokens[1]) !== topLevelLanguageId);
 			}
-
 			if (!hasDifferentLanguageId) {
 				return EMPTY_LINE_TOKENS;
 			}
@@ -91,41 +107,6 @@ export class ContiguousTokensStore {
 		}
 	}
 
-	private _deleteLines(start: number, deleteCount: number): void {
-		if (deleteCount === 0) {
-			return;
-		}
-		if (start + deleteCount > this._len) {
-			deleteCount = this._len - start;
-		}
-		this._lineTokens.splice(start, deleteCount);
-		this._len -= deleteCount;
-	}
-
-	private _insertLines(insertIndex: number, insertCount: number): void {
-		if (insertCount === 0) {
-			return;
-		}
-		const lineTokens: (Uint32Array | ArrayBuffer | null)[] = [];
-		for (let i = 0; i < insertCount; i++) {
-			lineTokens[i] = null;
-		}
-		this._lineTokens = arrays.arrayInsert(this._lineTokens, insertIndex, lineTokens);
-		this._len += insertCount;
-	}
-
-	public setTokens(topLevelLanguageId: string, lineIndex: number, lineTextLength: number, _tokens: Uint32Array | ArrayBuffer | null, checkEquality: boolean): boolean {
-		const tokens = ContiguousTokensStore._massageTokens(this._languageIdCodec.encodeLanguageId(topLevelLanguageId), lineTextLength, _tokens);
-		this._ensureLine(lineIndex);
-		const oldTokens = this._lineTokens[lineIndex];
-		this._lineTokens[lineIndex] = tokens;
-
-		if (checkEquality) {
-			return !ContiguousTokensStore._equals(oldTokens, tokens);
-		}
-		return false;
-	}
-
 	private static _equals(_a: Uint32Array | ArrayBuffer | null, _b: Uint32Array | ArrayBuffer | null) {
 		if (!_a || !_b) {
 			return !_a && !_b;
@@ -145,7 +126,7 @@ export class ContiguousTokensStore {
 		return true;
 	}
 
-	//#region Editing
+	//#region --- Editing -----------------------------------------------------
 
 	public acceptEdit(range: IRange, eolCount: number, firstLineLength: number): void {
 		this._acceptDeleteRange(range);
@@ -184,6 +165,17 @@ export class ContiguousTokensStore {
 		this._deleteLines(range.startLineNumber, range.endLineNumber - range.startLineNumber);
 	}
 
+	private _deleteLines(start: number, deleteCount: number): void {
+		if (deleteCount === 0) {
+			return;
+		}
+		if (start + deleteCount > this._len) {
+			deleteCount = this._len - start;
+		}
+		this._lineTokens.splice(start, deleteCount);
+		this._len -= deleteCount;
+	}
+
 	private _acceptInsertText(position: Position, eolCount: number, firstLineLength: number): void {
 
 		if (eolCount === 0 && firstLineLength === 0) {
@@ -206,6 +198,18 @@ export class ContiguousTokensStore {
 		this._lineTokens[lineIndex] = ContiguousTokensEditing.insert(this._lineTokens[lineIndex], position.column - 1, firstLineLength);
 
 		this._insertLines(position.lineNumber, eolCount);
+	}
+
+	private _insertLines(insertIndex: number, insertCount: number): void {
+		if (insertCount === 0) {
+			return;
+		}
+		const lineTokens: (Uint32Array | ArrayBuffer | null)[] = [];
+		for (let i = 0; i < insertCount; i++) {
+			lineTokens[i] = null;
+		}
+		this._lineTokens = arrays.arrayInsert(this._lineTokens, insertIndex, lineTokens);
+		this._len += insertCount;
 	}
 
 	//#endregion

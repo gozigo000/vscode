@@ -1,6 +1,10 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export class ContiguousMultilineTokensBuilder
  *--------------------------------------------------------------------------------------------*/
 
 import { readUInt32BE, writeUInt32BE } from 'vs/base/common/buffer';
@@ -40,6 +44,8 @@ export class ContiguousMultilineTokensBuilder {
 		return this._tokens;
 	}
 
+	//#region 직렬화 -------------------------
+
 	public serialize(): Uint8Array {
 		const size = this._serializeSize();
 		const result = new Uint8Array(size);
@@ -63,4 +69,6 @@ export class ContiguousMultilineTokensBuilder {
 			offset = this._tokens[i].serialize(destination, offset);
 		}
 	}
+
+	//#endregion
 }

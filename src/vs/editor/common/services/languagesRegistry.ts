@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export class LanguageIdCodec implements ILanguageIdCodec
+ * export class LanguagesRegistry extends Disposable
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from 'vs/base/common/event';
@@ -29,6 +34,12 @@ interface IResolvedLanguage {
 	icons: ILanguageIcon[];
 }
 
+/**
+ * language 관리
+ *
+ * - `language`(문자열)에 대응하는 `languageId`(숫자) 지정해줌
+ * - `language`로 `languageId` 찾거나, `languageId`로 `language` 찾을 수 있음.
+ */
 export class LanguageIdCodec implements ILanguageIdCodec {
 
 	private _nextLanguageId: number;
@@ -52,6 +63,7 @@ export class LanguageIdCodec implements ILanguageIdCodec {
 		}
 		const languageId = this._nextLanguageId++;
 		this._register(language, languageId);
+		// console.log('랭귀지 ' + language + '\t\t랭귀지 아이디: ' + this._nextLanguageId); // 테스트용
 	}
 
 	public encodeLanguageId(languageId: string): LanguageId {

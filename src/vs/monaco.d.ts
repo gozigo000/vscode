@@ -6930,8 +6930,8 @@ declare namespace monaco.languages {
 	}
 
 	/**
-	 * The state of the tokenizer between two lines.
-	 * It is useful to store flags such as in multiline comment, etc.
+	 * The state of the tokenizer between two lines. \
+	 * It is useful to store flags such as in multiline comment, etc. \
 	 * The model will clone the previous line's state and pass it in to tokenize the next line.
 	 */
 	export interface IState {

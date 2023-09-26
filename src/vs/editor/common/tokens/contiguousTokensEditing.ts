@@ -1,6 +1,12 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export const EMPTY_LINE_TOKENS
+[*]export class ContiguousTokensEditing
+ * export function toUint32Array
  *--------------------------------------------------------------------------------------------*/
 
 import { LineTokens } from 'vs/editor/common/tokens/lineTokens';
@@ -135,6 +141,7 @@ export class ContiguousTokensEditing {
 	}
 }
 
+/** ArrayBuffer를 Uint32Array에 담아줌 */
 export function toUint32Array(arr: Uint32Array | ArrayBuffer): Uint32Array {
 	if (arr instanceof Uint32Array) {
 		return arr;

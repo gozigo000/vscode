@@ -1,6 +1,12 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요]
+ * export class `TokenizationTextModelPart` extends `TextModelPart` implements `ITokenizationTextModelPart`
+ * 		 class `GrammarTokens` extends Disposable
+ * 		 class `AttachedViewHandler` extends Disposable
  *--------------------------------------------------------------------------------------------*/
 
 import { equals } from 'vs/base/common/arrays';
@@ -9,21 +15,27 @@ import { CharCode } from 'vs/base/common/charCode';
 import { BugIndicatingError, onUnexpectedError } from 'vs/base/common/errors';
 import { Emitter, Event } from 'vs/base/common/event';
 import { Disposable, DisposableMap, MutableDisposable } from 'vs/base/common/lifecycle';
+
 import { countEOL } from 'vs/editor/common/core/eolCounter';
 import { LineRange } from 'vs/editor/common/core/lineRange';
 import { IPosition, Position } from 'vs/editor/common/core/position';
 import { Range } from 'vs/editor/common/core/range';
 import { IWordAtPosition, getWordAtText } from 'vs/editor/common/core/wordHelper';
+
 import { StandardTokenType } from 'vs/editor/common/encodedTokenAttributes';
+
 import { IBackgroundTokenizationStore, IBackgroundTokenizer, ILanguageIdCodec, IState, ITokenizationSupport, TokenizationRegistry } from 'vs/editor/common/languages';
 import { ILanguageService } from 'vs/editor/common/languages/language';
 import { ILanguageConfigurationService, ResolvedLanguageConfiguration } from 'vs/editor/common/languages/languageConfigurationRegistry';
+
 import { IAttachedView } from 'vs/editor/common/model';
 import { BracketPairsTextModelPart } from 'vs/editor/common/model/bracketPairsTextModelPart/bracketPairsImpl';
 import { AttachedViews, IAttachedViewState, TextModel } from 'vs/editor/common/model/textModel';
 import { TextModelPart } from 'vs/editor/common/model/textModelPart';
 import { DefaultBackgroundTokenizer, TokenizerWithStateStoreAndTextModel, TrackingTokenizationStateStore } from 'vs/editor/common/model/textModelTokens';
+
 import { IModelContentChangedEvent, IModelLanguageChangedEvent, IModelLanguageConfigurationChangedEvent, IModelTokensChangedEvent } from 'vs/editor/common/textModelEvents';
+
 import { BackgroundTokenizationState, ITokenizationTextModelPart } from 'vs/editor/common/tokenizationTextModelPart';
 import { ContiguousMultilineTokens } from 'vs/editor/common/tokens/contiguousMultilineTokens';
 import { ContiguousMultilineTokensBuilder } from 'vs/editor/common/tokens/contiguousMultilineTokensBuilder';
@@ -32,8 +44,12 @@ import { LineTokens } from 'vs/editor/common/tokens/lineTokens';
 import { SparseMultilineTokens } from 'vs/editor/common/tokens/sparseMultilineTokens';
 import { SparseTokensStore } from 'vs/editor/common/tokens/sparseTokensStore';
 
-
+/**
+ * 메모:
+ * - 두 개의 토큰을 가지고 있음 (`grammarTokens`, `_semanticTokens`)
+ */
 export class TokenizationTextModelPart extends TextModelPart implements ITokenizationTextModelPart {
+
 	private readonly _semanticTokens: SparseTokensStore = new SparseTokensStore(this._languageService.languageIdCodec);
 
 	private readonly _onDidChangeLanguage: Emitter<IModelLanguageChangedEvent> = this._register(new Emitter<IModelLanguageChangedEvent>());
@@ -46,6 +62,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 	public readonly onDidChangeTokens: Event<IModelTokensChangedEvent> = this._onDidChangeTokens.event;
 
 	private readonly grammarTokens = this._register(new GrammarTokens(this._languageService.languageIdCodec, this._textModel, () => this._languageId, this._attachedViews));
+
 
 	constructor(
 		private readonly _languageService: ILanguageService,
@@ -118,7 +135,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		}
 	}
 
-	// #region Grammar Tokens
+	// #region --- 그래머 토큰 --------------------------------------------------
 
 	private validateLineNumber(lineNumber: number): void {
 		if (lineNumber < 1 || lineNumber > this._textModel.getLineCount()) {
@@ -163,7 +180,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 
 	// #endregion
 
-	// #region Semantic Tokens
+	// #region --- 시맨틱 토큰 --------------------------------------------------
 
 	public setSemanticTokens(tokens: SparseMultilineTokens[] | null, isComplete: boolean): void {
 		this._semanticTokens.set(tokens, isComplete);
@@ -203,7 +220,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 
 	// #endregion
 
-	// #region Utility Methods
+	// #region --- 유틸리티 메서드s ----------------------------------------------
 
 	public getWordAtPosition(_position: IPosition): IWordAtPosition | null {
 		this.assertNotDisposed();
@@ -296,7 +313,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 
 	// #endregion
 
-	// #region Language Id handling
+	// #region --- Language Id 핸들링 -------------------------------------------
 
 	public getLanguageId(): string {
 		return this._languageId;

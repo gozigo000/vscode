@@ -20,6 +20,7 @@ export class StopWatch {
 
 	private readonly _now: () => number;
 
+	/** 스탑워치 만들고, 스탑워치 시작  */
 	public static create(highResolution?: boolean): StopWatch {
 		return new StopWatch(highResolution);
 	}
