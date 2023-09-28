@@ -933,6 +933,12 @@ export class ViewModel extends Disposable implements IViewModel {
 				+ '</div>'
 			)
 		};
+		// ToDo: 배경색 없이 복사하려면 아래 내용만 반환하면 됨. 배경색을 적용할지 말지 정하기
+		// ToDo: 글자 전경색, 배경색도 명세서에 안쓰니 복사할 필요 없는 듯
+		// return {
+		// 	mode: languageId,
+		// 	html: this._getHTMLToCopy(range, colorMap),
+		// };
 	}
 
 	private _getHTMLToCopy(modelRange: Range, colorMap: string[]): string {

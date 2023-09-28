@@ -21,7 +21,9 @@ export const vs: IStandaloneThemeData = {
 		{ token: 'variable.predefined', foreground: '4864AA' },
 		{ token: 'constant', foreground: 'dd0000' },
 		{ token: 'comment', foreground: '008000' },
-		{ token: 'number', foreground: '098658', fontStyle: 'italic underline bold' }, // 테스트용
+		{ token: 'number', foreground: '098658', },
+		// { token: 'number', foreground: '098658', fontStyle: 'underline bold subscript' }, // [첨자] 테스트용 - 숫자 폰트 스타일
+		// { token: 'number', foreground: '098658', fontStyle: 'underline bold superscript' }, // [첨자] 테스트용 - 숫자 폰트 스타일
 		{ token: 'number.hex', foreground: '3030c0' },
 		{ token: 'regexp', foreground: '800000' },
 		{ token: 'annotation', foreground: '808080' },
@@ -52,7 +54,9 @@ export const vs: IStandaloneThemeData = {
 		{ token: 'attribute.value.html', foreground: '0000FF' },
 		{ token: 'attribute.value.xml', foreground: '0000FF' },
 
-		{ token: 'string', foreground: 'A31515', fontStyle: 'italic underline bold ABC' }, // 테스트용
+		{ token: 'string', foreground: 'A31515' },
+		// { token: 'string', foreground: 'A31515', fontStyle: 'bold subscript' }, // [첨자] 테스트용 - 문자열 폰트 스타일
+		// { token: 'string', foreground: 'A31515', fontStyle: 'bold superscript' }, // [첨자] 테스트용 - 문자열 폰트 스타일
 		{ token: 'string.html', foreground: '0000FF' },
 		{ token: 'string.sql', foreground: 'FF0000' },
 		{ token: 'string.yaml', foreground: '0451A5' },

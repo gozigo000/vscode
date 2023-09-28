@@ -492,6 +492,7 @@ export class MonarchTokenizer implements languages.ITokenizationSupport, IDispos
 		if (line.length >= this._maxTokenizationLineLength) {
 			return nullTokenizeEncoded(this._languageService.languageIdCodec.encodeLanguageId(this._languageId), lineState);
 		}
+		// console.log('토크나!!!111'); // 테스트용 - memo: 위첨자 만드니까 모든 글자에 italic 적용되는 버그가 있었는데 갑자기 고쳐침... 왜 그런지 모르겠음
 		const tokensCollector = new MonarchModernTokensCollector(this._languageService, this._standaloneThemeService.getColorTheme().tokenTheme);
 		const endLineState = this._tokenize(line, hasEOL, <MonarchLineState>lineState, tokensCollector);
 		return tokensCollector.finalize(endLineState);

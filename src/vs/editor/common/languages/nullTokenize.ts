@@ -29,6 +29,7 @@ export function nullTokenizeEncoded(languageId: LanguageId, state: IState | null
 		| (ColorId.DefaultForeground << MetadataConsts.FOREGROUND_OFFSET)
 		| (ColorId.DefaultBackground << MetadataConsts.BACKGROUND_OFFSET)
 	) >>> 0;
-
+	// memo: languageId가 128 이상이 되면 에러 발생 시키는 코드 넣을까??
+	// console.log('tokens[1]: ' + tokens[1].toString(2)); // 테스트용
 	return new EncodedTokenizationResult(tokens, state === null ? NullState : state);
 }

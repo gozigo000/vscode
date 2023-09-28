@@ -6,6 +6,7 @@
 import { FastDomNode } from 'vs/base/browser/fastDomNode';
 import { BareFontInfo } from 'vs/editor/common/config/fontInfo';
 
+// DoTo: 위/아래 첨자 폰트 크기 지정해주기
 export function applyFontInfo(domNode: FastDomNode<HTMLElement> | HTMLElement, fontInfo: BareFontInfo): void {
 	if (domNode instanceof FastDomNode) {
 		domNode.setFontFamily(fontInfo.getMassagedFontFamily());

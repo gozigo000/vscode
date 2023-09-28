@@ -96,6 +96,8 @@ class VisibleTextAreaData {
 					bold: false,
 					underline: false,
 					strikethrough: false,
+					subscript: false, // [첨자]
+					superscript: false, // [첨자]
 				};
 			}
 		}
@@ -790,7 +792,9 @@ export class TextAreaHandler extends ViewPart {
 					italic: presentation.italic,
 					bold: presentation.bold,
 					underline: presentation.underline,
-					strikethrough: presentation.strikethrough
+					strikethrough: presentation.strikethrough,
+					subscript: presentation.subscript, // [첨자]
+					superscript: presentation.superscript, // [첨자]
 				});
 			}
 			return;
@@ -885,6 +889,7 @@ export class TextAreaHandler extends ViewPart {
 		ta.setWidth(renderData.width);
 		ta.setHeight(renderData.height);
 
+		//#region 메타데이터 적용
 		ta.setColor(renderData.color ? Color.Format.CSS.formatHex(renderData.color) : '');
 		ta.setFontStyle(renderData.italic ? 'italic' : '');
 		if (renderData.bold) {
@@ -892,16 +897,22 @@ export class TextAreaHandler extends ViewPart {
 			ta.setFontWeight('bold');
 		}
 		ta.setTextDecoration(`${renderData.underline ? ' underline' : ''}${renderData.strikethrough ? ' line-through' : ''}`);
+		// ToDo: 여기도 위/아래 첨자 설정해야 하는지 모르겠음
+		// ta.setVerticalAlign(renderData.subscript ? 'sub' : ''); // [첨자]
+		// ta.setVerticalAlign(renderData.superscript ? 'super' : ''); // [첨자]
+		//#endregion
 
-		//#region 테스트용 - IME에서 현재 조합 중인 글자 보여주는 위치 바꿔줌
+		// #region [첨자] 테스트용 - IME에서 현재 조합 중인 글자 보여주는 위치 바꿔줌
 		// ta.setTop(50);
 		// ta.setTextDecoration(' underline');
 		// ta.setBackgroundColor('blue');
 		// ta.setFontSize(30);
 		// ta.setLineHeight(50);
 		// ta.setHeight(50);
-		// ta.setWidth(100);
-		//#endregion
+		// ta.setWidth(300);
+		// ta.setVerticalAlign('super'); //
+		// ta.setVerticalAlign('sub'); //
+		// #endregion
 
 		tac.setTop(renderData.useCover ? renderData.top : 0);
 		tac.setLeft(renderData.useCover ? renderData.left : 0);
@@ -935,6 +946,8 @@ interface IRenderData {
 	bold?: boolean;
 	underline?: boolean;
 	strikethrough?: boolean;
+	subscript?: boolean; // [첨자]
+	superscript?: boolean; // [첨자]
 }
 
 function measureText(text: string, fontInfo: FontInfo, tabSize: number): number {

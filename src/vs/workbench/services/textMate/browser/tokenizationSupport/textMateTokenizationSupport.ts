@@ -46,12 +46,40 @@ export class TextMateTokenizationSupport extends Disposable implements ITokeniza
 		}
 		return undefined;
 	}
-
+	/**
+	 * [첨자] memo: \
+	 * 모든 토큰에 italic 스타일 적용되고, 위첨자 적용되는 원인은 \
+	 * `this._grammar.tokenizeLine2(line, state, 500);`에 있는거 같음 \
+	 * 이 메서드는 src 폴더 범위 밖이라서 수정 못하는거 같음
+	 *
+	 * 아마도 토크나이저가 내가 수정하기 전 토큰 포맷을 기초로 토크나이징하기 \
+	 * 때문인듯 함. (editor/common/encodedTokenAttributes.ts)
+	*/
 	public tokenizeEncoded(line: string, hasEOL: boolean, state: StateStack): EncodedTokenizationResult {
 		const isRandomSample = Math.random() * 10_000 < 1;
 		const shouldMeasure = this._reportSlowTokenization || isRandomSample;
 		const sw = shouldMeasure ? new StopWatch(true) : undefined;
 		const textMateResult = this._grammar.tokenizeLine2(line, state, 500);
+		//#region --- 임시조치: 반환된 메타데이터 포맷을 수정 --------------------------
+
+		// bbbb bbbb ffff ffff fFFF FBTT LLLL LLLL
+		//            ^^^ ^^^^ ^!!! !*
+		// bbbb bbbb ffff ffff FFFF FFTT BLLL LLLL
+		//           ^^^^ ^^^^   !! !!   *
+		for (let i = 0, len = textMateResult.tokens.length / 2; i < len; i++) {
+			const metadataBefore = textMateResult.tokens[2 * i + 1];
+			const metadataAfter =
+				((metadataBefore & 0b0000_0000_0111_1111_1000_0000_0000_0000) << 1) |
+				((metadataBefore & 0b0000_0000_0000_0000_0111_1000_0000_0000) >> 1) |
+				((metadataBefore & 0b0000_0000_0000_0000_0000_0100_0000_0000) >> 3) |
+				((metadataBefore & 0b1111_1111_0000_0000_0000_0011_0111_1111)) // 안바뀌는 포맷들
+				;
+			textMateResult.tokens[2 * i + 1] = metadataAfter;
+			// console.log('메타데이터 전: ' + metadataBefore.toString(2));
+			// console.log('메타데이터 후: ' + metadataAfter.toString(2));
+		}
+		//#endregion
+
 		if (shouldMeasure) {
 			const timeMS = sw!.elapsed();
 			if (isRandomSample || timeMS > 32) {

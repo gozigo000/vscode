@@ -39,6 +39,7 @@ export class ParsedTokenThemeRule {
 }
 
 /**
+ * 테마 설정 내용 파싱하기 \
  * Parse a raw theme into rules.
  */
 export function parseTokenTheme(source: ITokenThemeRule[]): ParsedTokenThemeRule[] {
@@ -70,11 +71,15 @@ export function parseTokenTheme(source: ITokenThemeRule[]): ParsedTokenThemeRule
 					case 'strikethrough':
 						fontStyle = fontStyle | FontStyle.Strikethrough;
 						break;
-					case 'ABC':
-						console.log('테마 설정으로부터 metadata 만들기'); // 테스트용
-						// fontStyle = fontStyle | FontStyle.Strikethrough;
+					case 'subscript':
+						fontStyle = fontStyle | FontStyle.Subscript; // [첨자]
+						break;
+					case 'superscript':
+						fontStyle = fontStyle | FontStyle.Superscript; // [첨자]
 						break;
 				}
+				// console.log('테마 파싱  token: ' + entry.token); // [첨자] 테스트용
+				// console.log('테마 파싱 fontStyle: ' + fontStyle.toString(2)); // [첨자] 테스트용
 			}
 		}
 
@@ -145,6 +150,8 @@ function resolveParsedTokenThemeRules(parsedThemeRules: ParsedTokenThemeRule[], 
 	const root = new ThemeTrieElement(defaults);
 	for (let i = 0, len = parsedThemeRules.length; i < len; i++) {
 		const rule = parsedThemeRules[i];
+		// console.log('rule.token: ' + rule.token); // [첨자] 테스트용
+		// console.log('rule.fontStyle: ' + rule.fontStyle.toString(2)); // [첨자] 테스트용
 		root.insert(rule.token, rule.fontStyle, colorMap.getId(rule.foreground), colorMap.getId(rule.background));
 	}
 
@@ -410,6 +417,11 @@ export class ThemeTrieElement {
 	}
 }
 
+/**
+ * 메타데이터 CSS 만들기
+ *
+ * HTML 태그의 클래스 속성에 `mtk_`가 들어가면 해당 CSS가 적용됨
+ */
 export function generateTokensCSSForColorMap(colorMap: readonly Color[]): string {
 	const rules: string[] = [];
 	for (let i = 1, len = colorMap.length; i < len; i++) {
@@ -421,5 +433,7 @@ export function generateTokensCSSForColorMap(colorMap: readonly Color[]): string
 	rules.push('.mtku { text-decoration: underline; text-underline-position: under; }');
 	rules.push('.mtks { text-decoration: line-through; }');
 	rules.push('.mtks.mtku { text-decoration: underline line-through; text-underline-position: under; }');
+	rules.push('.mtkq { vertical-align: sub; }'); // [첨자] ToDo: 여기에서 { font-size: 12px; } 적용하면 작은 글씨로 렌더링되는데 커서는 여전히 일반 글자 크기만큼 움직이는 문제가 있음. 커서 이동거리도 글자 크기에 맞게 수정해줘야 함
+	rules.push('.mtkd { vertical-align: super; }'); // [첨자]
 	return rules.join('\n');
 }

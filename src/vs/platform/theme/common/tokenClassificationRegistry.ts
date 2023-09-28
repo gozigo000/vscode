@@ -39,6 +39,8 @@ export interface TokenTypeOrModifierContribution {
 	readonly deprecationMessage?: string;
 }
 
+// memo: 아래에 있는 내용들은 semantic token에서 사용하는거라
+// 위/아래 첨자 관련해서 수정 필요 없는거 같음
 
 export interface TokenStyleData {
 	foreground: Color | undefined;

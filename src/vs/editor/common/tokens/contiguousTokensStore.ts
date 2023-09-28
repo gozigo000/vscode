@@ -249,6 +249,22 @@ export class ContiguousTokensStore {
 }
 
 function getDefaultMetadata(topLevelLanguageId: LanguageId): number {
+	//#region [첨자] 테스트용 - 모든 글자에 italic 적용되는 문제 관련
+	const num = (
+		(topLevelLanguageId << MetadataConsts.LANGUAGEID_OFFSET)
+		| (StandardTokenType.Other << MetadataConsts.TOKEN_TYPE_OFFSET)
+		| (FontStyle.None << MetadataConsts.FONT_STYLE_OFFSET)
+		| (ColorId.DefaultForeground << MetadataConsts.FOREGROUND_OFFSET)
+		| (ColorId.DefaultBackground << MetadataConsts.BACKGROUND_OFFSET)
+		| (MetadataConsts.BALANCED_BRACKETS_MASK)
+	) >>> 0;
+	if ((num & MetadataConsts.FONT_STYLE_MASK) > 0) {
+		console.log('!!! 이상 발생 !!! - 디폴트 메타데이터');
+		console.log(num);
+		console.log(num.toString(2));
+	}
+	//#endregion
+
 	return (
 		(topLevelLanguageId << MetadataConsts.LANGUAGEID_OFFSET)
 		| (StandardTokenType.Other << MetadataConsts.TOKEN_TYPE_OFFSET)

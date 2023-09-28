@@ -1044,72 +1044,39 @@ const horses: [number, string][] = [
 	[0, 'ㅎ'],
 ];
 
-
-
-// const 단독자음들 = {
-// 	'ㄱ': ['가'],
-// 	'ㄲ': ['까'],
-// 	'ㄳ': ['', '가', '사'],
-// 	'ㄴ': ['나'],
-// 	'ㄵ': ['', '나', '자'],
-// 	'ㄶ': ['', '나', '하'],
-// 	'ㄷ': ['다'],
-// 	'ㄸ': ['따'],
-// 	'ㄹ': ['라'],
-// 	'ㄺ': ['', '라', '가'],
-// 	'ㄻ': ['', '라', '마'],
-// 	'ㄼ': ['', '라', '바'],
-// 	'ㄽ': ['', '라', '사'],
-// 	'ㄾ': ['', '라', '타'],
-// 	'ㄿ': ['', '라', '파'],
-// 	'ㅀ': ['', '라', '하'],
-// 	'ㅁ': ['마'],
-// 	'ㅂ': ['바'],
-// 	'ㅃ': ['빠'],
-// 	'ㅄ': ['', '바', '사'],
-// 	'ㅅ': ['사'],
-// 	'ㅆ': ['싸'],
-// 	'ㅇ': ['아'],
-// 	'ㅈ': ['자'],
-// 	'ㅉ': ['짜'],
-// 	'ㅊ': ['차'],
-// 	'ㅋ': ['카'],
-// 	'ㅌ': ['타'],
-// 	'ㅍ': ['파'],
-// 	'ㅎ': ['하'],
-// };
-const jaumMap = new Map<string, string[]>(); {
-	jaumMap.set('ㄱ', ['가'],);
-	jaumMap.set('ㄲ', ['까'],);
-	jaumMap.set('ㄳ', ['', '가', '사'],);
-	jaumMap.set('ㄴ', ['나'],);
-	jaumMap.set('ㄵ', ['', '나', '자'],);
-	jaumMap.set('ㄶ', ['', '나', '하'],);
-	jaumMap.set('ㄷ', ['다'],);
-	jaumMap.set('ㄸ', ['따'],);
-	jaumMap.set('ㄹ', ['라'],);
-	jaumMap.set('ㄺ', ['', '라', '가'],);
-	jaumMap.set('ㄻ', ['', '라', '마'],);
-	jaumMap.set('ㄼ', ['', '라', '바'],);
-	jaumMap.set('ㄽ', ['', '라', '사'],);
-	jaumMap.set('ㄾ', ['', '라', '타'],);
-	jaumMap.set('ㄿ', ['', '라', '파'],);
-	jaumMap.set('ㅀ', ['', '라', '하'],);
-	jaumMap.set('ㅁ', ['마'],);
-	jaumMap.set('ㅂ', ['바'],);
-	jaumMap.set('ㅃ', ['빠'],);
-	jaumMap.set('ㅄ', ['', '바', '사'],);
-	jaumMap.set('ㅅ', ['사'],);
-	jaumMap.set('ㅆ', ['싸'],);
-	jaumMap.set('ㅇ', ['아'],);
-	jaumMap.set('ㅈ', ['자'],);
-	jaumMap.set('ㅉ', ['짜'],);
-	jaumMap.set('ㅊ', ['차'],);
-	jaumMap.set('ㅋ', ['카'],);
-	jaumMap.set('ㅌ', ['타'],);
-	jaumMap.set('ㅍ', ['파'],);
-	jaumMap.set('ㅎ', ['하'],);
-}
+// 단독으로 있을 수 있는 자음들 - 유니코드(12593 ~ 12622)
+const heads: string[][] = [
+	['가'],
+	['까'],
+	['가', '사'],
+	['나'],
+	['나', '자'],
+	['나', '하'],
+	['다'],
+	['따'],
+	['라'],
+	['라', '가'],
+	['라', '마'],
+	['라', '바'],
+	['라', '사'],
+	['라', '타'],
+	['라', '파'],
+	['라', '하'],
+	['마'],
+	['바'],
+	['빠'],
+	['바', '사'],
+	['사'],
+	['싸'],
+	['아'],
+	['자'],
+	['짜'],
+	['차'],
+	['카'],
+	['타'],
+	['파'],
+	['하'],
+];
 
 /** 바나코 퍼지 점수 */
 export function banacoScore(
@@ -1458,19 +1425,19 @@ function isMatching(patCh: string, wordCh: string): boolean {
 
 	// 자음만 있는 경우 (ㄱ:12593 - ㅎ:12622)
 	if (12593 <= patCode && patCode <= 12622) {
-		const jaumArr = jaumMap.get(patCh);
+		const jaumArr = heads[patCode - 'ㄱ'.charCodeAt(0)];
 		if (jaumArr === undefined) {
 			return false;
 		}
 
-		if (jaumArr[0] !== '') {
+		if (jaumArr.length === 1) {
 			const beginCode = jaumArr[0].charCodeAt(0);
 			const endCode = beginCode + 587;
 			if (patCh === wordCh || (beginCode <= wordCode && wordCode <= endCode)) {
 				return true;
 			}
 		}
-		// ToDo: (jaumArr[0] === '')인 경우 (ㄳ,ㄺ,ㅄ...)
+		// ToDo: (jaumArr.length === 2)인 경우 (ㄳ,ㄺ,ㅄ...)
 		// else {
 		// }
 	}

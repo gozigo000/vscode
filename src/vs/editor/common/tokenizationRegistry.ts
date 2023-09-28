@@ -93,6 +93,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 	}
 
 	public setColorMap(colorMap: Color[]): void {
+		// console.log('컬러맵 사이즈: ' + this._colorMap?.length); // 테스트용
 		this._colorMap = colorMap;
 		this._onDidChange.fire({
 			changedLanguages: Array.from(this._tokenizationSupports.keys()),
@@ -101,6 +102,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 	}
 
 	public getColorMap(): Color[] | null {
+		// console.log('컬러맵 사이즈: ' + this._colorMap?.length); // 테스트용
 		return this._colorMap;
 	}
 

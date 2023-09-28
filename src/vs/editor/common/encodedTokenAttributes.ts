@@ -9,9 +9,11 @@
  * export const enum FontStyle
  * export const enum ColorId
  * export const enum StandardTokenType
- * export const enum MetadataConsts
+[*]export const enum MetadataConsts
 [*]export class TokenMetadata
  * export interface ITokenPresentation
+
+ * memo: 위/아래 첨자 기능 추가 위해 수정한 부분 찾기 -> `[첨자]` 검색
  *--------------------------------------------------------------------------------------------*/
 
 /**
@@ -24,9 +26,10 @@ export const enum LanguageId {
 
 /**
  * 폰트 스타일 \
- * Values are 2^x such that a bit mask can be used.
+ * 비트 마스트를 사용하기 위해 2^x 형태임
  *
- * `NotSet` = -1, `None` = 0, `Italic` = 1, `Bold` = 2, `Underline` = 4, `Strikethrough` = 8,
+ * `NotSet` = -1, `None` = 0, `Italic` = 1, `Bold` = 2, `Underline` = 4, `Strikethrough` = 8, \
+ * `Subscript` = 16, `Superscript` = 32
  */
 export const enum FontStyle {
 	NotSet = -1,
@@ -35,8 +38,8 @@ export const enum FontStyle {
 	Bold = 2,
 	Underline = 4,
 	Strikethrough = 8,
-	// ToDo: subscript = 16
-	// ToDo: superscript = 32
+	Subscript = 16, // [첨자] 아래 첨자
+	Superscript = 32, // [첨자] 위 첨자
 }
 
 /**
@@ -62,12 +65,7 @@ export const enum StandardTokenType {
 	RegEx = 3
 }
 
-/**
- * Helpers to manage the "collapsed" metadata of an entire StackElement stack. \
- * The following assumptions have been made:
- *  - languageId < 256 => needs 8 bits
- *  - unique color count < 512 => needs 9 bits
- *
+/** 오리지날 포맷
  * The binary format is:
  * - -------------------------------------------
  *     3322 2222 2222 1111 1111 1100 0000 0000
@@ -84,18 +82,42 @@ export const enum StandardTokenType {
  *  - b = 배경색 (9 bits)
  *
  */
-export const enum MetadataConsts {
-	LANGUAGEID_MASK = 0b00000000000000000000000011111111,
-	TOKEN_TYPE_MASK = 0b00000000000000000000001100000000,
-	BALANCED_BRACKETS_MASK = 0b00000000000000000000010000000000,
-	FONT_STYLE_MASK = 0b00000000000000000111100000000000,
-	FOREGROUND_MASK = 0b00000000111111111000000000000000,
-	BACKGROUND_MASK = 0b11111111000000000000000000000000,
 
-	ITALIC_MASK = 0b00000000000000000000100000000000,
-	BOLD_MASK = 0b00000000000000000001000000000000,
-	UNDERLINE_MASK = 0b00000000000000000010000000000000,
-	STRIKETHROUGH_MASK = 0b00000000000000000100000000000000,
+/**
+ * Helpers to manage the "collapsed" metadata of an entire StackElement stack. \
+ * 다음과 같이 가정함:
+ *  - languageId < 128 => needs 7 bits
+ *  - unique color count < 256 => needs 8 bits
+ *
+ * The binary format is:
+ * - -------------------------------------------
+ *     3322 2222 2222 1111 1111 1100 0000 0000
+ *     1098 7654 3210 9876 5432 1098 7654 3210
+ * - -------------------------------------------
+ *     xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+ *     bbbb bbbb ffff ffff FFFF FFTT BLLL LLLL
+ * - -------------------------------------------
+ *  - L = LanguageId (8 bits) - 1 bit 축소
+ *  - T = StandardTokenType (2 bits)
+ *  - B = Balanced bracket (1 bit) - 8번째 bit로 이동
+ *  - F = FontStyle (5 bits) - 2 bit 확장
+ *  - f = 전경색 (8 bits) - 1 bit 축소
+ *  - b = 배경색 (8 bits)
+ */
+export const enum MetadataConsts {
+	LANGUAGEID_MASK /*  */ = 0b00000000000000000000000001111111, // [첨자] 왼쪽에서 1bit 축소
+	BALANCED_BRACKETS_MASK = 0b00000000000000000000000010000000, // [첨자] 오른쪽으로 3bit 이동
+	TOKEN_TYPE_MASK /*  */ = 0b00000000000000000000001100000000,
+	FONT_STYLE_MASK /*  */ = 0b00000000000000001111110000000000, // [첨자] 양쪽으로 2 bit 확장
+	FOREGROUND_MASK /*  */ = 0b00000000111111110000000000000000, // [첨자] 왼쪽에서 1 bit 축소
+	BACKGROUND_MASK /*  */ = 0b11111111000000000000000000000000,
+
+	ITALIC_MASK /*      */ = 0b00000000000000000000010000000000, // [첨자] 오른쪽으로 1 bit 확장했으므로 오른쪽으로 1 이동
+	BOLD_MASK /*        */ = 0b00000000000000000000100000000000, // [첨자] 오른쪽으로 1 bit 확장했으므로 오른쪽으로 1 이동
+	UNDERLINE_MASK /*   */ = 0b00000000000000000001000000000000, // [첨자] 오른쪽으로 1 bit 확장했으므로 오른쪽으로 1 이동
+	STRIKETHROUGH_MASK/**/ = 0b00000000000000000010000000000000, // [첨자] 오른쪽으로 1 bit 확장했으므로 오른쪽으로 1 이동
+	SUBSCRIPT_MASK /*   */ = 0b00000000000000000100000000000000,
+	SUPERSCRIPT_MASK /* */ = 0b00000000000000001000000000000000,
 
 	// Semantic tokens cannot set the language id, so we can
 	// use the first 8 bits for control purposes
@@ -107,14 +129,15 @@ export const enum MetadataConsts {
 	SEMANTIC_USE_BACKGROUND = 0b00000000000000000000000000100000,
 
 	LANGUAGEID_OFFSET = 0,
+	BALANCED_BRACKETS_OFFSET = 7, // [첨자] 오른쪽으로 3bit 이동했으므로 3 감소
 	TOKEN_TYPE_OFFSET = 8,
-	BALANCED_BRACKETS_OFFSET = 10,
-	FONT_STYLE_OFFSET = 11,
-	FOREGROUND_OFFSET = 15,
+	FONT_STYLE_OFFSET = 10, // [첨자] 오른쪽으로 1 bit 확장했으므로 1 감소
+	FOREGROUND_OFFSET = 16, // [첨자] 1 bit 축소했으므로 1 증가
 	BACKGROUND_OFFSET = 24
 }
 
 /**
+ * 메타데이터 해석 도구s
  */
 export class TokenMetadata {
 
@@ -163,14 +186,21 @@ export class TokenMetadata {
 		if (fontStyle & FontStyle.Strikethrough) {
 			className += ' mtks';
 		}
+		if (fontStyle & FontStyle.Subscript) {
+			className += ' mtkq'; // [첨자] 아래 첨자
+		}
+		else if (fontStyle & FontStyle.Superscript) {
+			className += ' mtkd'; // [첨자] 위 첨자
+		}
+
+		// console.log('렌더링 - 메타데이터 - 폰트 스타일: ' + fontStyle.toString(2));
+		// console.log('렌더링 - 메타데이터 - html 클래스: ' + className);
 
 		return className;
 	}
 
-	// 테스트용
-	// static toggle = true;
-	/*
-	 * <span> 태그의 style 속성에 들어가는 CSS 형식 문자열 반환
+	/**
+	 * <span style="..."> 태그에 들어가는 CSS style 문자열 반환
 	 * - 텍스트 복사할 때 호출됨
 	 */
 	public static getInlineStyleFromMetadata(metadata: number, colorMap: string[]): string {
@@ -178,10 +208,6 @@ export class TokenMetadata {
 		const fontStyle = this.getFontStyle(metadata);
 
 		let result = `color: ${colorMap[foreground]};`;
-		// 테스트용
-		// if (TokenMetadata.toggle) { result = `vertical-align: sub; font-size: 9px`; }
-		// if (TokenMetadata.toggle) { result = `vertical-align: super; font-size: 9px`; }
-		// TokenMetadata.toggle = !TokenMetadata.toggle;
 
 		if (fontStyle & FontStyle.Italic) {
 			result += 'font-style: italic;';
@@ -199,6 +225,12 @@ export class TokenMetadata {
 		if (textDecoration) {
 			result += `text-decoration:${textDecoration};`;
 		}
+		if (fontStyle & FontStyle.Subscript) {
+			result += 'vertical-align: sub;'; // [첨자]
+		}
+		else if (fontStyle & FontStyle.Superscript) {
+			result += 'vertical-align: super;'; // [첨자]
+		}
 		return result;
 	}
 
@@ -212,6 +244,8 @@ export class TokenMetadata {
 			bold: Boolean(fontStyle & FontStyle.Bold),
 			underline: Boolean(fontStyle & FontStyle.Underline),
 			strikethrough: Boolean(fontStyle & FontStyle.Strikethrough),
+			subscript: Boolean(fontStyle & FontStyle.Subscript), // [첨자]
+			superscript: Boolean(fontStyle & FontStyle.Superscript), // [첨자]
 		};
 	}
 }
@@ -224,4 +258,6 @@ export interface ITokenPresentation {
 	bold: boolean;
 	underline: boolean;
 	strikethrough: boolean;
+	subscript: boolean; // [첨자]
+	superscript: boolean; // [첨자]
 }

@@ -966,6 +966,7 @@ function _renderLine(input: ResolvedRenderLineInput, sb: StringBuilder): RenderL
 		}
 		sb.appendString('class="');
 		sb.appendString(partRendersWhitespaceWithWidth ? 'mtkz' : partType);
+		// console.log('렌더링: partType = ' + partType); // [첨자] 테스트용 - partType: 메타데이터의 <span> 태그 클래스 이름
 		sb.appendASCIICharCode(CharCode.DoubleQuote);
 
 		if (partRendersWhitespace) { // 공백문자도 표시하는 경우
@@ -1054,11 +1055,6 @@ function _renderLine(input: ResolvedRenderLineInput, sb: StringBuilder): RenderL
 						break;
 
 					case CharCode.LessThan:
-						// 테스트용
-						// sb.appendString('H<sub>2</sub>');
-						// sb.appendString('H<sup>2</sup>');
-						// sb.appendString('H<span style="vertical-align: sub;">2</span>');
-						// sb.appendString('감사<span style="vertical-align: super;">감사</span>');
 						sb.appendString('&lt;');
 						break;
 

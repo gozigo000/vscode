@@ -1,6 +1,11 @@
+/* eslint-disable header/header */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *
+ * [개요] export
+ * export class `FastDomNode`<T extends HTMLElement>
+ * export function `createFastDomNode`<T extends HTMLElement>
  *--------------------------------------------------------------------------------------------*/
 
 export class FastDomNode<T extends HTMLElement> {
@@ -23,6 +28,7 @@ export class FastDomNode<T extends HTMLElement> {
 	private _fontFeatureSettings: string = '';
 	private _fontVariationSettings: string = '';
 	private _textDecoration: string = '';
+	private _verticalAlign: string = ''; // [첨자]
 	private _lineHeight: string = '';
 	private _letterSpacing: string = '';
 	private _className: string = '';
@@ -193,7 +199,16 @@ export class FastDomNode<T extends HTMLElement> {
 		}
 		this._textDecoration = textDecoration;
 		this.domNode.style.textDecoration = this._textDecoration;
-		// this.domNode.style.verticalAlign = ' sub';
+	}
+
+	/** [첨자] 위/아래 첨자 세팅 */
+	public setVerticalAlign(verticalAlign: string): void {
+		if (this._verticalAlign === verticalAlign) {
+			return;
+		}
+		this._verticalAlign = verticalAlign;
+		this.domNode.style.verticalAlign = this._verticalAlign;
+		// 참고: CSS Style 속성s - interface CSSStyleDeclaration (lib.dom.d.ts)
 	}
 
 	public setLineHeight(_lineHeight: number | string): void {
